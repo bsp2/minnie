@@ -1,0 +1,777 @@
+// ----
+// ---- file   : MinnieDrawable.tks
+// ---- author : bsp
+// ---- legal  : Distributed under terms of the MIT LICENSE.
+// ----
+// ---- info   : "minnie" API
+// ----
+// ----
+// ----
+
+module MMinnieDrawable;
+
+use namespace sdvgcapi;
+
+
+class MinnieDrawable {
+   define int DEFAULT_GL_BUF_SIZE   = 128 * 1024;
+   define int DEFAULT_DRAW_BUF_SIZE =   2 * 1024;
+
+   static boolean b_debug_draw_list = 0;
+
+   public boolean b_debug;
+
+   protected Buffer buf_gl;
+   protected int gl_buf_id;
+   protected boolean b_gl_buf_update_pending;
+
+   // (note)              peak: test069_bluejay  32526 bytes (mixed)
+   // (note)              peak: test069_bluejay  12570 bytes (triangles only)
+   // (note) usually <<2k, e.g. test040_tiger     6500 bytes (mixed)
+   // (note)                    test040_tiger     2480 bytes (triangles only)
+   // (note)                    test039_wildboar   450 bytes
+   // (note)                    test012_stars       12 bytes
+   protected Buffer buf_draw;
+
+   protected int c32_bg_color;   // suggested background color (first palette entry)
+
+   protected float size_x;  // suggested projR/projB for initTransform()  (object bounding box)
+   protected float size_y;
+
+   protected float scale_x;
+   protected float scale_y;
+
+   protected float rot_ang;
+
+   protected float trans_x;
+   protected float trans_y;
+
+
+   public method init() {
+      gl_buf_id = 0;
+
+      size_x = 640.0f;
+      size_y = 480.0f;
+
+      scale_x = 1.0f;
+      scale_y = 1.0f;
+      rot_ang = 0.0f;
+      trans_x = 0.0f;
+      trans_y = 0.0f;
+   }
+
+   public method alloc(int _maxGLBufSize, int _maxDrawBufSize) {
+      if(_maxGLBufSize < 4096)
+         _maxGLBufSize = DEFAULT_GL_BUF_SIZE;
+
+      if(_maxDrawBufSize < 1024)
+         _maxDrawBufSize = DEFAULT_DRAW_BUF_SIZE;
+
+      buf_gl  .size = _maxGLBufSize;
+      buf_draw.size = _maxDrawBufSize;
+   }
+
+   public method reset() {
+      buf_gl  .offset = 0;
+      buf_draw.offset = 0;
+   }
+
+   public method setEnableDebug(boolean _bEnable) {
+      b_debug = _bEnable;
+   }
+
+   public method getEnableDebug() : boolean {
+      return b_debug;
+   }
+
+   public method freeGL() {
+      // must be called by onOpen()
+      if(0 != gl_buf_id)
+      {
+         zglDeleteBuffer(gl_buf_id);
+         gl_buf_id = 0;
+      }
+   }
+
+   public method free() {
+      freeGL();
+      buf_gl.free();
+      buf_draw.free();
+   }
+
+   protected method lazyAllocGL() {
+      // Create vertex attrib buffer
+      if(0 == gl_buf_id && buf_gl.size > 0)
+      {
+         gl_buf_id = zglGenBuffer();
+         glBindBuffer(GL_ARRAY_BUFFER, gl_buf_id);
+         zglBufferData(GL_ARRAY_BUFFER, buf_gl.size, null, GL_STATIC_DRAW);
+         glBindBuffer(GL_ARRAY_BUFFER, 0); // remove binding
+         trace "[dbg] Drawable::lazyAllocGL: VBO last error = " +glGetError();
+      }
+   }
+
+   public method getGLBuffer() : Buffer {
+      return buf_gl;
+   }
+
+   public method getGLOffset() : int {
+      return buf_gl.offset;
+   }
+
+   public method getDrawBuffer() : Buffer {
+      return buf_draw;
+   }
+
+   public method getDrawOffset() : int {
+      return buf_draw.offset;
+   }
+
+   public method onOpen() {
+      freeGL();
+   }
+
+   public method setSize2f(float _w, float _h) {
+      size_x = _w;
+      size_y = _h;
+   }
+
+   public method setSizeX(float _w) {
+      size_x = _w;
+   }
+
+   public method setSizeY(float _h) {
+      size_y = _h;
+   }
+
+   public method getSizeX() : float {
+      return size_x;
+   }
+
+   public method getSizeY() : float {
+      return size_y;
+   }
+
+   public method setBackgroundColor(int _c32) {
+      c32_bg_color = _c32;
+   }
+
+   public method getBackgroundColor() : int {
+      return c32_bg_color;
+   }
+
+   public method setScale2f(float _sx, float _sy) {
+      scale_x = _sx;
+      scale_y = _sy;
+   }
+
+   public method setScaleX(float _s) {
+      scale_x = _s;
+   }
+
+   public method setScaleY(float _s) {
+      scale_y = _s;
+   }
+
+   public method getScaleX() : float {
+      return scale_x;
+   }
+
+   public method getScaleY() : float {
+      return scale_y;
+   }
+
+   public method setRotation(float _a) {
+      rot_ang = _a;
+   }
+
+   public method getRotation() : float {
+      return rot_ang;
+   }
+
+   public method setTranslate2f(float _tx, float _ty) {
+      trans_x = _tx;
+      trans_y = _ty;
+   }
+
+   public method setTranslateX(float _tx) {
+      trans_x = _tx;
+   }
+
+   public method setTranslateY(float _ty) {
+      trans_y = _ty;
+   }
+
+   public method getTranslateX() : float {
+      return trans_x;
+   }
+
+   public method getTranslateY() : float {
+      return trans_y;
+   }
+
+   public method queueGLBufUpdate() {
+      b_gl_buf_update_pending = true;
+   }
+
+   public method isComplete() : boolean {
+      return (buf_gl.offset > 0) && (buf_draw.offset > 0);
+   }
+
+   public method draw() {
+      lazyAllocGL();
+
+      if(0 != gl_buf_id && isComplete())
+      {
+         // if(Minnie.IsEdgeAA())
+         //    glUniform1f(u_fill_aa, b_gl_aa ? 1.0f : 0.0f);
+
+         if(b_gl_buf_update_pending)
+         {
+            b_gl_buf_update_pending = false;
+            glBindBuffer(GL_ARRAY_BUFFER, gl_buf_id);
+            zglBufferSubData(GL_ARRAY_BUFFER, 0, buf_gl.offset, buf_gl);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+         }
+
+         // Parse draw-list
+         int dlSize = buf_draw.offset;
+         buf_draw.offset = 0;
+         if(b_debug_draw_list) trace "[trc] ~~~~~~~~~~~~~~~~~~~~~~~~~~ draw-list";
+         int numOpsPoly                = 0;
+         int numOpsTri                 = 0;
+         int numOpsTriTex              = 0;
+         int numOpsLineStrip           = 0;
+         int numOpsLineStripBevel      = 0;
+         int numOpsRectFill            = 0;
+         int numOpsRectStroke          = 0;
+         int numOpsRectFillStroke      = 0;
+         int numOpsRoundRectFill       = 0;
+         int numOpsRoundRectStroke     = 0;
+         int numOpsRoundRectFillStroke = 0;
+         int numOpsEllipseFill         = 0;
+         int numOpsEllipseStroke       = 0;
+         int numOpsEllipseFillStroke   = 0;
+
+         int     dlTexId = 0;
+         boolean dlTexRepeat;
+         boolean dlTexFilter;
+         float dlTexDecalAlpha;
+
+         while(buf_draw.offset < dlSize)
+         {
+            short op = buf_draw.i16;
+            if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-list off="+(buf_draw.offset-2)+" op="+op;
+            float aaRange;
+            int vbOff;
+            int numTris;
+            int numVerts;
+            float r, g, b, a;
+            int c32;
+            float strokeW;
+            int c32Stroke;
+            float cx;
+            float cy;
+            float rx;
+            float ry;
+            float sx;
+            float sy;
+            int vbOffBorder;
+            int numVertsBorder;
+            int glPrimType;
+
+            switch(op)
+            {
+               default:
+                  trace "[trc] unhandled op "+op;
+                  buf_draw.offset = dlSize;
+                  break;
+
+               case 0x00:  // end
+                  buf_draw.offset = dlSize;
+                  break;
+
+               case MINNIE_DRAWOP_TRIANGLES_FILL_FLAT_32:
+                  vbOff   = buf_draw.i32;
+                  numTris = buf_draw.i32;
+                  r       = buf_draw.f32;
+                  g       = buf_draw.f32;
+                  b       = buf_draw.f32;
+                  a       = buf_draw.f32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-triangles<flat,f32>: vbOff="+vbOff+" numTris="+numTris;
+                  sdvg_SetFillColor4f(r, g, b, a);
+                  sdvg_DrawTrianglesFillFlatVBO32(gl_buf_id,
+                                                  vbOff,
+                                                  numTris
+                                                  );
+                  numOpsTri++;
+                  break;
+
+               case MINNIE_DRAWOP_TRIANGLES_FILL_FLAT_14_2:
+                  vbOff   = buf_draw.i32;
+                  numTris = buf_draw.i32;
+                  r       = buf_draw.f32;
+                  g       = buf_draw.f32;
+                  b       = buf_draw.f32;
+                  a       = buf_draw.f32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-triangles<flat,14_2>: vbOff="+vbOff+" numTris="+numTris;
+                  sdvg_SetFillColor4f(r, g, b, a);
+                  sdvg_DrawTrianglesFillFlatVBO14_2(gl_buf_id,
+                                                    vbOff,
+                                                    numTris
+                                                    );
+                  numOpsTri++;
+                  break;
+
+               case MINNIE_DRAWOP_TRIANGLES_FILL_GOURAUD_32:
+                  vbOff   = buf_draw.i32;
+                  numTris = buf_draw.i32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-triangles<f32>: vbOff="+vbOff+" numTris="+numTris;
+                  sdvg_DrawTrianglesFillGouraudVBO32(gl_buf_id,
+                                                     vbOff,
+                                                     numTris
+                                                     );
+                  numOpsTri++;
+                  break;
+
+               case MINNIE_DRAWOP_TRIANGLES_FILL_GOURAUD_14_2:
+                  vbOff   = buf_draw.i32;
+                  numTris = buf_draw.i32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-triangles<s14.2>: vbOff="+vbOff+" numTris="+numTris;
+                  sdvg_DrawTrianglesFillGouraudVBO14_2(gl_buf_id,
+                                                       vbOff,
+                                                       numTris
+                                                       );
+                  numOpsTri++;
+                  break;
+
+               case MINNIE_DRAWOP_TRIANGLES_FILL_GOURAUD_EDGEAA_32:
+                  vbOff   = buf_draw.i32;
+                  numTris = buf_draw.i32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-triangles<f32_edgeaa>: vbOff="+vbOff+" numTris="+numTris;
+                  sdvg_DrawTrianglesFillGouraudEdgeAAVBO32(gl_buf_id,
+                                                           vbOff,
+                                                           numTris
+                                                           );
+                  numOpsTri++;
+                  break;
+
+               case MINNIE_DRAWOP_TRIANGLES_FILL_GOURAUD_EDGEAA_14_2:
+                  vbOff   = buf_draw.i32;
+                  numTris = buf_draw.i32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-triangles<s14.2_edgeaa>: vbOff="+vbOff+" numTris="+numTris;
+                  sdvg_DrawTrianglesFillGouraudEdgeAAVBO14_2(gl_buf_id,
+                                                             vbOff,
+                                                             numTris
+                                                             );
+                  numOpsTri++;
+                  break;
+
+               case MINNIE_DRAWOP_POLYGON_FILL_FLAT_32:
+                  vbOff    = buf_draw.i32;
+                  numVerts = buf_draw.i32;
+                  r        = buf_draw.f32;
+                  g        = buf_draw.f32;
+                  b        = buf_draw.f32;
+                  a        = buf_draw.f32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-polygon<flat,f32>: vbOff="+vbOff+" numVerts="+numVerts;
+                  sdvg_SetFillColor4f(r, g, b, a);
+                  sdvg_DrawPolygonFillFlatVBO32(gl_buf_id,
+                                                vbOff,
+                                                numVerts
+                                                );
+                  numOpsPoly++;
+                  break;
+
+               case MINNIE_DRAWOP_POLYGON_FILL_FLAT_14_2:
+                  vbOff    = buf_draw.i32;
+                  numVerts = buf_draw.i32;
+                  r        = buf_draw.f32;
+                  g        = buf_draw.f32;
+                  b        = buf_draw.f32;
+                  a        = buf_draw.f32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-polygon<flat,14.2>: vbOff="+vbOff+" numVerts="+numVerts;
+                  sdvg_SetFillColor4f(r, g, b, a);
+                  sdvg_DrawPolygonFillFlatVBO14_2(gl_buf_id,
+                                                  vbOff,
+                                                  numVerts
+                                                  );
+                  numOpsPoly++;
+                  break;
+
+               case MINNIE_DRAWOP_POLYGON_FILL_GOURAUD_32:
+                  vbOff    = buf_draw.i32;
+                  numVerts = buf_draw.i32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-polygon<f32>: vbOff="+vbOff+" numVerts="+numVerts;
+                  sdvg_DrawPolygonFillGouraudVBO32(gl_buf_id,
+                                                   vbOff,
+                                                   numVerts
+                                                   );
+                  numOpsPoly++;
+                  break;
+
+               case MINNIE_DRAWOP_POLYGON_FILL_GOURAUD_14_2:
+                  vbOff    = buf_draw.i32;
+                  numVerts = buf_draw.i32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-polygon<s14.2>: vbOff="+vbOff+" numVerts="+numVerts;
+                  sdvg_DrawPolygonFillGouraudVBO14_2(gl_buf_id,
+                                                     vbOff,
+                                                     numVerts
+                                                     );
+                  numOpsPoly++;
+                  break;
+
+               case MINNIE_DRAWOP_RECT_FILL:
+                  cx             = buf_draw.f32;  // center (_not_ top/left corner)
+                  cy             = buf_draw.f32;
+                  rx             = buf_draw.f32;  // radius, not size
+                  ry             = buf_draw.f32;
+                  c32            = buf_draw.i32;
+                  aaRange        = buf_draw.i16 * (1.0f / 256);
+                  vbOff          = buf_draw.i32;
+                  numVerts       = buf_draw.i16;
+                  vbOffBorder    = buf_draw.i32;
+                  numVertsBorder = buf_draw.i16;
+                  glPrimType     = buf_draw.i16;
+                  sdvg_SetFillColorARGB(c32);
+                  sdvg_SetAARange(aaRange);
+                  sdvg_DrawRectFillAAVBO32(gl_buf_id,
+                                           vbOff,
+                                           numVerts,
+                                           vbOffBorder,
+                                           numVertsBorder,
+                                           glPrimType,
+                                           cx, cy,
+                                           rx, ry
+                                           );
+                  numOpsRectFill++;
+                  break;
+
+               case MINNIE_DRAWOP_RECT_STROKE:
+                  cx             = buf_draw.f32;  // center (_not_ top/left corner)
+                  cy             = buf_draw.f32;
+                  rx             = buf_draw.f32;  // radius, not size
+                  ry             = buf_draw.f32;
+                  c32Stroke      = buf_draw.i32;
+                  strokeW        = buf_draw.f32;
+                  aaRange        = buf_draw.i16 * (1.0f / 256);
+                  vbOffBorder    = buf_draw.i32;
+                  numVertsBorder = buf_draw.i16;
+                  glPrimType     = buf_draw.i16;
+                  sdvg_SetStrokeColorARGB(c32Stroke);
+                  sdvg_SetStrokeWidth(strokeW);
+                  sdvg_SetAARange(aaRange);
+                  sdvg_DrawRectStrokeAAVBO32(gl_buf_id,
+                                             vbOffBorder,
+                                             numVertsBorder,
+                                             glPrimType,
+                                             cx, cy,
+                                             rx, ry
+                                             );
+                  numOpsRectStroke++;
+                  break;
+
+               case MINNIE_DRAWOP_RECT_FILL_STROKE:
+                  cx             = buf_draw.f32;  // center (_not_ top/left corner)
+                  cy             = buf_draw.f32;
+                  rx             = buf_draw.f32;  // radius, not size
+                  ry             = buf_draw.f32;
+                  c32            = buf_draw.i32;
+                  c32Stroke      = buf_draw.i32;
+                  strokeW        = buf_draw.f32;
+                  aaRange        = buf_draw.i16 * (1.0f / 256);
+                  vbOff          = buf_draw.i32;
+                  numVerts       = buf_draw.i16;
+                  vbOffBorder    = buf_draw.i32;
+                  numVertsBorder = buf_draw.i16;
+                  glPrimType     = buf_draw.i16;
+                  sdvg_SetFillColorARGB(c32);
+                  sdvg_SetStrokeColorARGB(c32Stroke);
+                  sdvg_SetStrokeWidth(strokeW);
+                  sdvg_SetAARange(aaRange);
+                  sdvg_DrawRectFillStrokeAAVBO32(gl_buf_id,
+                                                 vbOff,
+                                                 numVerts,
+                                                 vbOffBorder,
+                                                 numVertsBorder,
+                                                 glPrimType,
+                                                 cx, cy,
+                                                 rx, ry
+                                                 );
+                  numOpsRectFillStroke++;
+                  break;
+
+               case MINNIE_DRAWOP_ELLIPSE_FILL:
+                  cx             = buf_draw.f32;
+                  cy             = buf_draw.f32;
+                  rx             = buf_draw.f32;
+                  ry             = buf_draw.f32;
+                  c32            = buf_draw.i32;
+                  vbOff          = buf_draw.i32;
+                  numVerts       = buf_draw.i16;
+                  vbOffBorder    = buf_draw.i32;
+                  numVertsBorder = buf_draw.i16;
+                  glPrimType     = buf_draw.i16;
+                  sdvg_SetFillColorARGB(c32);
+                  sdvg_DrawEllipseFillAAVBO32(gl_buf_id,
+                                              vbOff,
+                                              numVerts,
+                                              vbOffBorder,
+                                              numVertsBorder,
+                                              glPrimType,
+                                              cx, cy,
+                                              rx, ry
+                                              );
+                  numOpsEllipseFill++;
+                  break;
+
+               case MINNIE_DRAWOP_ELLIPSE_STROKE:
+                  cx             = buf_draw.f32;
+                  cy             = buf_draw.f32;
+                  rx             = buf_draw.f32;
+                  ry             = buf_draw.f32;
+                  c32Stroke      = buf_draw.i32;
+                  strokeW        = buf_draw.f32;
+                  vbOffBorder    = buf_draw.i32;
+                  numVertsBorder = buf_draw.i16;
+                  glPrimType     = buf_draw.i16;
+                  sdvg_SetStrokeColorARGB(c32Stroke);
+                  sdvg_SetStrokeWidth(strokeW);
+                  sdvg_DrawEllipseStrokeAAVBO32(gl_buf_id,
+                                                vbOffBorder,
+                                                numVertsBorder,
+                                                glPrimType,
+                                                cx, cy,
+                                                rx, ry
+                                                );
+                  numOpsEllipseStroke++;
+                  break;
+
+               case MINNIE_DRAWOP_ELLIPSE_FILL_STROKE:
+                  cx             = buf_draw.f32;
+                  cy             = buf_draw.f32;
+                  rx             = buf_draw.f32;
+                  ry             = buf_draw.f32;
+                  c32            = buf_draw.i32;
+                  c32Stroke      = buf_draw.i32;
+                  strokeW        = buf_draw.f32;
+                  vbOff          = buf_draw.i32;
+                  numVerts       = buf_draw.i16;
+                  vbOffBorder    = buf_draw.i32;
+                  numVertsBorder = buf_draw.i16;
+                  glPrimType     = buf_draw.i16;
+                  sdvg_SetFillColorARGB(c32);
+                  sdvg_SetStrokeColorARGB(c32Stroke);
+                  sdvg_SetStrokeWidth(strokeW);
+                  sdvg_DrawEllipseFillStrokeAAVBO32(gl_buf_id,
+                                                    vbOff,
+                                                    numVerts,
+                                                    vbOffBorder,
+                                                    numVertsBorder,
+                                                    glPrimType,
+                                                    cx, cy,
+                                                    rx, ry
+                                                    );
+                  numOpsEllipseFillStroke++;
+                  break;
+
+               case MINNIE_DRAWOP_ROUNDRECT_FILL:
+                  cx             = buf_draw.f32;  // center (_not_ top/left corner)
+                  cy             = buf_draw.f32;
+                  sx             = buf_draw.f32;  // rect size (center-size..center+size)
+                  sy             = buf_draw.f32;
+                  rx             = buf_draw.f32;  // corner radius
+                  ry             = buf_draw.f32;
+                  c32            = buf_draw.i32;
+                  aaRange        = buf_draw.i16 * (1.0f / 256);
+                  vbOff          = buf_draw.i32;
+                  numVerts       = buf_draw.i16;
+                  vbOffBorder    = buf_draw.i32;
+                  numVertsBorder = buf_draw.i16;
+                  glPrimType     = buf_draw.i16;
+                  sdvg_SetFillColorARGB(c32);
+                  sdvg_SetAARange(aaRange);
+                  // trace "xxx call DrawRoundRectFillVBO32 #verts="+numVerts+" #vertsBorder="+numVertsBorder+" primTypeBorder="+glPrimType+" s=("+sx+";"+sy+")"+" r=("+rx+";"+ry+")";
+                  sdvg_DrawRoundRectFillAAVBO32(gl_buf_id,
+                                                vbOff,
+                                                numVerts,
+                                                vbOffBorder,
+                                                numVertsBorder,
+                                                glPrimType,
+                                                cx, cy,
+                                                sx, sy,
+                                                rx, ry
+                                                );
+                  numOpsRoundRectFill++;
+                  break;
+
+               case MINNIE_DRAWOP_ROUNDRECT_STROKE:
+                  cx             = buf_draw.f32;  // center (_not_ top/left corner)
+                  cy             = buf_draw.f32;
+                  sx             = buf_draw.f32;  // rect size (center-size..center+size)
+                  sy             = buf_draw.f32;
+                  rx             = buf_draw.f32;  // corner radius
+                  ry             = buf_draw.f32;
+                  c32Stroke      = buf_draw.i32;
+                  strokeW        = buf_draw.f32;
+                  aaRange        = buf_draw.i16 * (1.0f / 256);
+                  vbOffBorder    = buf_draw.i32;
+                  numVertsBorder = buf_draw.i16;
+                  glPrimType     = buf_draw.i16;
+                  sdvg_SetStrokeColorARGB(c32Stroke);
+                  sdvg_SetStrokeWidth(strokeW);
+                  sdvg_SetAARange(aaRange);
+                  // trace "xxx call DrawRoundRectStrokeVBO32 #verts="+numVerts+" #vertsBorder="+numVertsBorder+" primTypeBorder="+glPrimType+" s=("+sx+";"+sy+")"+" r=("+rx+";"+ry+")";
+                  sdvg_DrawRoundRectStrokeAAVBO32(gl_buf_id,
+                                                  vbOffBorder,
+                                                  numVertsBorder,
+                                                  glPrimType,
+                                                  cx, cy,
+                                                  sx, sy,
+                                                  rx, ry
+                                                  );
+                  numOpsRoundRectStroke++;
+                  break;
+
+               case MINNIE_DRAWOP_ROUNDRECT_FILL_STROKE:
+                  cx             = buf_draw.f32;  // center (_not_ top/left corner)
+                  cy             = buf_draw.f32;
+                  sx             = buf_draw.f32;  // rect size (center-size..center+size)
+                  sy             = buf_draw.f32;
+                  rx             = buf_draw.f32;  // corner radius
+                  ry             = buf_draw.f32;
+                  c32            = buf_draw.i32;
+                  c32Stroke      = buf_draw.i32;
+                  strokeW        = buf_draw.f32;
+                  aaRange        = buf_draw.i16 * (1.0f / 256);
+                  vbOff          = buf_draw.i32;
+                  numVerts       = buf_draw.i16;
+                  vbOffBorder    = buf_draw.i32;
+                  numVertsBorder = buf_draw.i16;
+                  glPrimType     = buf_draw.i16;
+                  sdvg_SetFillColorARGB(c32);
+                  sdvg_SetStrokeColorARGB(c32Stroke);
+                  sdvg_SetStrokeWidth(strokeW);
+                  sdvg_SetAARange(aaRange);
+                  // trace "xxx call DrawRoundRectFillStrokeVBO32 #verts="+numVerts+" #vertsBorder="+numVertsBorder+" primTypeBorder="+glPrimType+" s=("+sx+";"+sy+")"+" r=("+rx+";"+ry+")";
+                  sdvg_DrawRoundRectFillStrokeAAVBO32(gl_buf_id,
+                                                      vbOff,
+                                                      numVerts,
+                                                      vbOffBorder,
+                                                      numVertsBorder,
+                                                      glPrimType,
+                                                      cx, cy,
+                                                      sx, sy,
+                                                      rx, ry
+                                                      );
+                  numOpsRoundRectFillStroke++;
+                  break;
+
+               case MINNIE_DRAWOP_BIND_TEXTURE:
+                  dlTexId     = buf_draw.i32;
+                  dlTexRepeat = buf_draw.i8;
+                  dlTexFilter = buf_draw.i8;
+                  sdvg_BindTexture(dlTexId, dlTexRepeat, dlTexFilter);
+                  break;
+
+               case MINNIE_DRAWOP_UNBIND_TEXTURE:
+                  dlTexId = 0;
+                  sdvg_UnbindTexture();
+                  break;
+
+               case MINNIE_DRAWOP_TEXTURE_DECAL_ALPHA:
+                  dlTexDecalAlpha = buf_draw.f32;
+                  sdvg_SetTextureDecalAlpha(dlTexDecalAlpha);
+                  break;
+
+               case MINNIE_DRAWOP_TRIANGLES_TEX_UV_FLAT_32:
+                  vbOff   = buf_draw.i32;
+                  numTris = buf_draw.i32;
+                  c32     = buf_draw.i32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-tri-tex-uv-flat<f32>: vbOff="+vbOff+" numTris="+numTris+" texId="+dlTexId+" texRep="+dlTexRepeat+" texFlt="+dlTexFilter;
+                  sdvg_SetFillColorARGB(c32);
+                  sdvg_DrawTrianglesTexUVFlatVBO32(gl_buf_id,
+                                                   vbOff,
+                                                   numTris
+                                                   );
+                  numOpsTriTex++;
+                  break;
+
+               case MINNIE_DRAWOP_TRIANGLES_TEX_UV_FLAT_DECAL_32:
+                  vbOff   = buf_draw.i32;
+                  numTris = buf_draw.i32;
+                  c32     = buf_draw.i32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-tri-tex-uv-flat-decal<f32>: vbOff="+vbOff+" numTris="+numTris+" texId="+dlTexId+" texRep="+dlTexRepeat+" texFlt="+dlTexFilter;
+                  sdvg_SetFillColorARGB(c32);
+                  sdvg_DrawTrianglesTexUVFlatDecalVBO32(gl_buf_id,
+                                                        vbOff,
+                                                        numTris
+                                                        );
+                  numOpsTriTex++;
+                  break;
+
+               case MINNIE_DRAWOP_TRIANGLES_TEX_UV_GOURAUD_32:
+                  vbOff   = buf_draw.i32;
+                  numTris = buf_draw.i32;
+                  c32     = buf_draw.i32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-tri-tex-uv-gouraud<f32>: vbOff="+vbOff+" numTris="+numTris+" texId="+dlTexId+" texRep="+dlTexRepeat+" texFlt="+dlTexFilter;
+                  sdvg_SetFillColorARGB(c32);
+                  sdvg_DrawTrianglesTexUVGouraudVBO32(gl_buf_id,
+                                                      vbOff,
+                                                      numTris
+                                                      );
+                  numOpsTriTex++;
+                  break;
+
+               case MINNIE_DRAWOP_TRIANGLES_TEX_UV_GOURAUD_DECAL_32:
+                  vbOff   = buf_draw.i32;
+                  numTris = buf_draw.i32;
+                  c32     = buf_draw.i32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-tri-tex-uv-gouraud-decal<f32>: vbOff="+vbOff+" numTris="+numTris+" texId="+dlTexId+" texRep="+dlTexRepeat+" texFlt="+dlTexFilter;
+                  sdvg_SetFillColorARGB(c32);
+                  sdvg_DrawTrianglesTexUVGouraudDecalVBO32(gl_buf_id,
+                                                           vbOff,
+                                                           numTris
+                                                           );
+                  numOpsTriTex++;
+                  break;
+
+               case MINNIE_DRAWOP_LINE_STRIP_FLAT_14_2:
+                  vbOff    = buf_draw.i32;
+                  numVerts = buf_draw.i32;
+                  c32      = buf_draw.i32;
+                  strokeW  = buf_draw.f32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-line-strip-flat<s14.2>: vbOff="+vbOff+" numVerts="+numVerts+" strokeW="+strokeW;
+                  sdvg_SetStrokeColorARGB(c32);
+                  sdvg_SetStrokeWidth(strokeW);
+                  sdvg_DrawLineStripFlatAAVBO14_2(gl_buf_id,
+                                                  vbOff,
+                                                  numVerts/*numPoints*/
+                                                  );
+                  numOpsLineStrip++;
+                  break;
+
+               case MINNIE_DRAWOP_LINE_STRIP_FLAT_BEVEL_14_2:
+                  vbOff    = buf_draw.i32;
+                  numVerts = buf_draw.i32;
+                  c32      = buf_draw.i32;
+                  strokeW  = buf_draw.f32;
+                  if(b_debug_draw_list) trace "[trc] MinnieDrawable::draw: draw-line-strip-flat-bevel<s14.2>: vbOff="+vbOff+" numVerts="+numVerts+" strokeW="+strokeW;
+                  sdvg_SetStrokeColorARGB(c32);
+                  sdvg_SetStrokeWidth(strokeW);
+                  sdvg_DrawLineStripFlatBevelAAVBO14_2(gl_buf_id,
+                                                       vbOff,
+                                                       numVerts/*numPoints*/
+                                                       );
+                  numOpsLineStripBevel++;
+                  break;
+
+            } // switch op
+         } // iterate draw ops
+
+         if(b_debug)
+            trace "[dbg] MinnieDrawable::draw: #Tri="+numOpsTri+" #Poly="+numOpsPoly+" #TriTex="+numOpsTriTex+" #LineStrip="+numOpsLineStrip+" #LineStripBevel="+numOpsLineStripBevel+" #RectFill="+numOpsRectFill+" #RectStroke="+numOpsRectStroke+" #RectFillStroke="+numOpsRectFillStroke+" #EllipseFill="+numOpsEllipseFill+" #EllipseStroke="+numOpsEllipseStroke+" #EllipseFillStroke="+numOpsEllipseFillStroke+" #RoundRectFill="+numOpsRoundRectFill+" #RoundRectStroke="+numOpsRoundRectStroke+" #RoundRectFillStroke="+numOpsRoundRectFillStroke+" dl-size="+buf_draw.offset;
+      }
+   }
+
+}
