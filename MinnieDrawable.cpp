@@ -32,6 +32,9 @@
 
 static sBool b_debug_draw_list = 0;
 
+#define Ddebug_draw_list_printf if(!b_debug_draw_list);else Dprintf
+#define Ddebug_draw_list_printf if(!b_debug_draw_list);else Dprintf
+
 
 // ---------------------------------------------------------------------------- MinnieDrawable
 _MinnieDrawable::_MinnieDrawable(void) {
@@ -251,10 +254,7 @@ void _MinnieDrawable::draw() {
       // Parse draw-list
       sUI dlSize = Dstream_get_offset(buf_draw);
       Dstream_set_offset(buf_draw, 0u);
-      if(b_debug_draw_list)
-      {
-         Dyac_host_printf("[trc] ~~~~~~~~~~~~~~~~~~~~~~~~~~ draw-list");
-      }
+      Ddebug_draw_list_printf("[trc] ~~~~~~~~~~~~~~~~~~~~~~~~~~ draw-list");
       sUI numOpsPoly                = 0u;
       sUI numOpsTri                 = 0u;
       sUI numOpsTriTex              = 0u;
@@ -278,10 +278,7 @@ void _MinnieDrawable::draw() {
       while(Dstream_get_offset(buf_draw) < dlSize)
       {
          sU16 op = Dstream_read_i16(buf_draw);
-         if(b_debug_draw_list)
-         {
-            Dyac_host_printf("[trc] MinnieDrawable::draw: draw-list off=%u op=%u\n", (Dstream_get_offset(buf_draw)-2u), op);
-         }
+         Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-list off=%u op=%u\n", (Dstream_get_offset(buf_draw)-2u), op);
          sF32 aaRange;
          sUI vbOff;
          sUI numTris;
@@ -303,7 +300,7 @@ void _MinnieDrawable::draw() {
          switch(op)
          {
             default:
-               Dyac_host_printf("[~~~] MinnieDrawable::draw: unhandled op %u\n", op);
+               Ddebug_draw_list_printf("[~~~] MinnieDrawable::draw: unhandled op %u\n", op);
                Dstream_set_offset(buf_draw, dlSize);
                break;
 
@@ -318,10 +315,7 @@ void _MinnieDrawable::draw() {
                g       = Dstream_read_f32(buf_draw);
                b       = Dstream_read_f32(buf_draw);
                a       = Dstream_read_f32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-flat<f32>: vbOff=%u numTris=%u\n", vbOff, numTris);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-flat<f32>: vbOff=%u numTris=%u\n", vbOff, numTris);
                sdvg_SetFillColor4f(r, g, b, a);
                sdvg_DrawTrianglesFillFlatVBO32(gl_buf_id,
                                                vbOff,
@@ -337,10 +331,7 @@ void _MinnieDrawable::draw() {
                g       = Dstream_read_f32(buf_draw);
                b       = Dstream_read_f32(buf_draw);
                a       = Dstream_read_f32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-flat<14_2>: vbOff=%u numTris=%u\n", vbOff, numTris);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-flat<14_2>: vbOff=%u numTris=%u\n", vbOff, numTris);
                sdvg_SetFillColor4f(r, g, b, a);
                sdvg_DrawTrianglesFillFlatVBO14_2(gl_buf_id,
                                                  vbOff,
@@ -352,10 +343,7 @@ void _MinnieDrawable::draw() {
             case MINNIE_DRAWOP_TRIANGLES_FILL_GOURAUD_32:
                vbOff   = Dstream_read_i32(buf_draw);
                numTris = Dstream_read_i32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-gouraud<f32>: vbOff=%u numTris=%u\n", vbOff, numTris);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-gouraud<f32>: vbOff=%u numTris=%u\n", vbOff, numTris);
                sdvg_DrawTrianglesFillGouraudVBO32(gl_buf_id,
                                                   vbOff,
                                                   numTris
@@ -366,10 +354,7 @@ void _MinnieDrawable::draw() {
             case MINNIE_DRAWOP_TRIANGLES_FILL_GOURAUD_14_2:
                vbOff   = Dstream_read_i32(buf_draw);
                numTris = Dstream_read_i32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-gouraud<s14.2>: vbOff=%u numTris=%u\n", vbOff, numTris);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-gouraud<s14.2>: vbOff=%u numTris=%u\n", vbOff, numTris);
                sdvg_DrawTrianglesFillGouraudVBO14_2(gl_buf_id,
                                                     vbOff,
                                                     numTris
@@ -380,10 +365,7 @@ void _MinnieDrawable::draw() {
             case MINNIE_DRAWOP_TRIANGLES_FILL_GOURAUD_EDGEAA_32:
                vbOff   = Dstream_read_i32(buf_draw);
                numTris = Dstream_read_i32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-gouraud<f32_edgeaa>: vbOff=%u numTris=%u\n", vbOff, numTris);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-gouraud<f32_edgeaa>: vbOff=%u numTris=%u\n", vbOff, numTris);
                sdvg_DrawTrianglesFillGouraudEdgeAAVBO32(gl_buf_id,
                                                         vbOff,
                                                         numTris
@@ -394,10 +376,7 @@ void _MinnieDrawable::draw() {
             case MINNIE_DRAWOP_TRIANGLES_FILL_GOURAUD_EDGEAA_14_2:
                vbOff   = Dstream_read_i32(buf_draw);
                numTris = Dstream_read_i32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-gouraud<s14.2_edgeaa>: vbOff=%u numTris=%u\n", vbOff, numTris);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-triangles-fill-gouraud<s14.2_edgeaa>: vbOff=%u numTris=%u\n", vbOff, numTris);
                sdvg_DrawTrianglesFillGouraudEdgeAAVBO14_2(gl_buf_id,
                                                           vbOff,
                                                           numTris
@@ -412,10 +391,7 @@ void _MinnieDrawable::draw() {
                g        = Dstream_read_f32(buf_draw);
                b        = Dstream_read_f32(buf_draw);
                a        = Dstream_read_f32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-polygon-fill-flat<f32>: vbOff=%u numVerts=%u\n", vbOff, numVerts);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-polygon-fill-flat<f32>: vbOff=%u numVerts=%u\n", vbOff, numVerts);
                sdvg_SetFillColor4f(r, g, b, a);
                sdvg_DrawPolygonFillFlatVBO32(gl_buf_id,
                                              vbOff,
@@ -431,10 +407,7 @@ void _MinnieDrawable::draw() {
                g        = Dstream_read_f32(buf_draw);
                b        = Dstream_read_f32(buf_draw);
                a        = Dstream_read_f32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-polygon-fill-flat<14.2>: vbOff=%u numVerts=%u\n", vbOff, numVerts);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-polygon-fill-flat<14.2>: vbOff=%u numVerts=%u\n", vbOff, numVerts);
                sdvg_SetFillColor4f(r, g, b, a);
                sdvg_DrawPolygonFillFlatVBO14_2(gl_buf_id,
                                                vbOff,
@@ -446,10 +419,7 @@ void _MinnieDrawable::draw() {
             case MINNIE_DRAWOP_POLYGON_FILL_GOURAUD_32:
                vbOff    = Dstream_read_i32(buf_draw);
                numVerts = Dstream_read_i32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-polygon-fill-gouraud<f32>: vbOff=%u numVerts=%u\n", vbOff, numVerts);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-polygon-fill-gouraud<f32>: vbOff=%u numVerts=%u\n", vbOff, numVerts);
                sdvg_DrawPolygonFillGouraudVBO32(gl_buf_id,
                                                 vbOff,
                                                 numVerts
@@ -460,10 +430,7 @@ void _MinnieDrawable::draw() {
             case MINNIE_DRAWOP_POLYGON_FILL_GOURAUD_14_2:
                vbOff    = Dstream_read_i32(buf_draw);
                numVerts = Dstream_read_i32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-polygon-fill-gouraud<s14.2>: vbOff=%u numVerts=%u\n", vbOff, numVerts);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-polygon-fill-gouraud<s14.2>: vbOff=%u numVerts=%u\n", vbOff, numVerts);
                sdvg_DrawPolygonFillGouraudVBO14_2(gl_buf_id,
                                                   vbOff,
                                                   numVerts
@@ -483,10 +450,7 @@ void _MinnieDrawable::draw() {
                vbOffBorder    = Dstream_read_i32(buf_draw);
                numVertsBorder = Dstream_read_i16(buf_draw);
                glPrimType     = Dstream_read_i16(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-rect-fill<f32>: vbOff=%u numVerts=%u numVertsBorder=%u\n", vbOff, numVerts, numVertsBorder);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-rect-fill<f32>: vbOff=%u numVerts=%u numVertsBorder=%u\n", vbOff, numVerts, numVertsBorder);
                sdvg_SetFillColorARGB(c32);
                sdvg_SetAARange(aaRange);
                sdvg_DrawRectFillAAVBO32(gl_buf_id,
@@ -512,10 +476,7 @@ void _MinnieDrawable::draw() {
                vbOffBorder    = Dstream_read_i32(buf_draw);
                numVertsBorder = Dstream_read_i16(buf_draw);
                glPrimType     = Dstream_read_i16(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-rect-stroke<f32>: vbOffBorder=%u numVertsBorder=%u\n", vbOffBorder, numVertsBorder);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-rect-stroke<f32>: vbOffBorder=%u numVertsBorder=%u\n", vbOffBorder, numVertsBorder);
                sdvg_SetStrokeColorARGB(c32Stroke);
                sdvg_SetStrokeWidth(strokeW);
                sdvg_SetAARange(aaRange);
@@ -543,10 +504,7 @@ void _MinnieDrawable::draw() {
                vbOffBorder    = Dstream_read_i32(buf_draw);
                numVertsBorder = Dstream_read_i16(buf_draw);
                glPrimType     = Dstream_read_i16(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-rect-fill-stroke<f32>: vbOff=%u numVerts=%u vbOffBorder=%u numVertsBorder=%u\n", vbOff, numVerts, vbOffBorder, numVertsBorder);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-rect-fill-stroke<f32>: vbOff=%u numVerts=%u vbOffBorder=%u numVertsBorder=%u\n", vbOff, numVerts, vbOffBorder, numVertsBorder);
                sdvg_SetFillColorARGB(c32);
                sdvg_SetStrokeColorARGB(c32Stroke);
                sdvg_SetStrokeWidth(strokeW);
@@ -574,10 +532,7 @@ void _MinnieDrawable::draw() {
                vbOffBorder    = Dstream_read_i32(buf_draw);
                numVertsBorder = Dstream_read_i16(buf_draw);
                glPrimType     = Dstream_read_i16(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-ellipse-fill<f32>: vbOff=%u numVerts=%u vbOffBorder=%u numVertsBorder=%u\n", vbOff, numVerts, vbOffBorder, numVertsBorder);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-ellipse-fill<f32>: vbOff=%u numVerts=%u vbOffBorder=%u numVertsBorder=%u\n", vbOff, numVerts, vbOffBorder, numVertsBorder);
                sdvg_SetFillColorARGB(c32);
                sdvg_DrawEllipseFillAAVBO32(gl_buf_id,
                                            vbOff,
@@ -601,10 +556,7 @@ void _MinnieDrawable::draw() {
                vbOffBorder    = Dstream_read_i32(buf_draw);
                numVertsBorder = Dstream_read_i16(buf_draw);
                glPrimType     = Dstream_read_i16(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-ellipse-stroke<f32>: vbOffBorder=%u numVertsBorder=%u\n", vbOffBorder, numVertsBorder);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-ellipse-stroke<f32>: vbOffBorder=%u numVertsBorder=%u\n", vbOffBorder, numVertsBorder);
                sdvg_SetStrokeColorARGB(c32Stroke);
                sdvg_SetStrokeWidth(strokeW);
                sdvg_DrawEllipseStrokeAAVBO32(gl_buf_id,
@@ -630,10 +582,7 @@ void _MinnieDrawable::draw() {
                vbOffBorder    = Dstream_read_i32(buf_draw);
                numVertsBorder = Dstream_read_i16(buf_draw);
                glPrimType     = Dstream_read_i16(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-ellipse-fill-stroke<f32>: vbOff=%u numVerts=%u vbOffBorder=%u numVertsBorder=%u\n", vbOff, numVerts, vbOffBorder, numVertsBorder);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-ellipse-fill-stroke<f32>: vbOff=%u numVerts=%u vbOffBorder=%u numVertsBorder=%u\n", vbOff, numVerts, vbOffBorder, numVertsBorder);
                sdvg_SetFillColorARGB(c32);
                sdvg_SetStrokeColorARGB(c32Stroke);
                sdvg_SetStrokeWidth(strokeW);
@@ -663,10 +612,7 @@ void _MinnieDrawable::draw() {
                vbOffBorder    = Dstream_read_i32(buf_draw);
                numVertsBorder = Dstream_read_i16(buf_draw);
                glPrimType     = Dstream_read_i16(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-roundrect-fill<f32>: vbOff=%u numVerts=%u vbOffBorder=%u numVertsBorder=%u\n", vbOff, numVerts, vbOffBorder, numVertsBorder);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-roundrect-fill<f32>: vbOff=%u numVerts=%u vbOffBorder=%u numVertsBorder=%u\n", vbOff, numVerts, vbOffBorder, numVertsBorder);
                sdvg_SetFillColorARGB(c32);
                sdvg_SetAARange(aaRange);
                sdvg_DrawRoundRectFillAAVBO32(gl_buf_id,
@@ -695,10 +641,7 @@ void _MinnieDrawable::draw() {
                vbOffBorder    = Dstream_read_i32(buf_draw);
                numVertsBorder = Dstream_read_i16(buf_draw);
                glPrimType     = Dstream_read_i16(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-roundrect-stroke<f32>: vbOffBorder=%u numVertsBorder=%u\n", vbOffBorder, numVertsBorder);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-roundrect-stroke<f32>: vbOffBorder=%u numVertsBorder=%u\n", vbOffBorder, numVertsBorder);
                sdvg_SetStrokeColorARGB(c32Stroke);
                sdvg_SetStrokeWidth(strokeW);
                sdvg_SetAARange(aaRange);
@@ -729,10 +672,7 @@ void _MinnieDrawable::draw() {
                vbOffBorder    = Dstream_read_i32(buf_draw);
                numVertsBorder = Dstream_read_i16(buf_draw);
                glPrimType     = Dstream_read_i16(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-roundrect-fill-stroke<f32>: vbOff=%u numVerts=%u vbOffBorder=%u numVertsBorder=%u\n", vbOff, numVerts, vbOffBorder, numVertsBorder);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-roundrect-fill-stroke<f32>: vbOff=%u numVerts=%u vbOffBorder=%u numVertsBorder=%u\n", vbOff, numVerts, vbOffBorder, numVertsBorder);
                sdvg_SetFillColorARGB(c32);
                sdvg_SetStrokeColorARGB(c32Stroke);
                sdvg_SetStrokeWidth(strokeW);
@@ -754,28 +694,19 @@ void _MinnieDrawable::draw() {
                dlTexId     = Dstream_read_i32(buf_draw);
                dlTexRepeat = Dstream_read_i8(buf_draw);
                dlTexFilter = Dstream_read_i8(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: bind-texture: texId=%u texRep=%d texFlt=%d\n", dlTexId, dlTexRepeat, dlTexFilter);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: bind-texture: texId=%u texRep=%d texFlt=%d\n", dlTexId, dlTexRepeat, dlTexFilter);
                sdvg_BindTexture2D(dlTexId, dlTexRepeat, dlTexFilter);
                break;
 
             case MINNIE_DRAWOP_UNBIND_TEXTURE:
                dlTexId = 0;
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: unbind-texture\n");
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: unbind-texture\n");
                sdvg_UnbindTexture2D();
                break;
 
             case MINNIE_DRAWOP_TEXTURE_DECAL_ALPHA:
                dlTexDecalAlpha = Dstream_read_f32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: texture-decal-alpha: decalAlpha=%f\n", dlTexDecalAlpha);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: texture-decal-alpha: decalAlpha=%f\n", dlTexDecalAlpha);
                sdvg_SetTextureDecalAlpha(dlTexDecalAlpha);
                break;
 
@@ -783,10 +714,7 @@ void _MinnieDrawable::draw() {
                vbOff   = Dstream_read_i32(buf_draw);
                numTris = Dstream_read_i32(buf_draw);
                c32     = Dstream_read_i32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-tri-tex-uv-flat<f32>: vbOff=%u numTris=%u texId=%u texRep=%d texFlt=%d\n", vbOff, numTris, dlTexId, dlTexRepeat, dlTexFilter);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-tri-tex-uv-flat<f32>: vbOff=%u numTris=%u texId=%u texRep=%d texFlt=%d\n", vbOff, numTris, dlTexId, dlTexRepeat, dlTexFilter);
                sdvg_SetFillColorARGB(c32);
                sdvg_DrawTrianglesTexUVFlatVBO32(gl_buf_id,
                                                 vbOff,
@@ -799,10 +727,7 @@ void _MinnieDrawable::draw() {
                vbOff   = Dstream_read_i32(buf_draw);
                numTris = Dstream_read_i32(buf_draw);
                c32     = Dstream_read_i32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-tri-tex-uv-flat-decal<f32>: vbOff=%u numTris=%u texId=%u texRep=%d texFlt=%d\n", vbOff, numTris, dlTexId, dlTexRepeat, dlTexFilter);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-tri-tex-uv-flat-decal<f32>: vbOff=%u numTris=%u texId=%u texRep=%d texFlt=%d\n", vbOff, numTris, dlTexId, dlTexRepeat, dlTexFilter);
                sdvg_SetFillColorARGB(c32);
                sdvg_DrawTrianglesTexUVFlatDecalVBO32(gl_buf_id,
                                                      vbOff,
@@ -815,10 +740,7 @@ void _MinnieDrawable::draw() {
                vbOff   = Dstream_read_i32(buf_draw);
                numTris = Dstream_read_i32(buf_draw);
                c32     = Dstream_read_i32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-tri-tex-uv-gouraud<f32>: vbOff=%u numTris=%u texId=%u texRep=%d texFlt=%d\n", vbOff, numTris, dlTexId, dlTexRepeat, dlTexFilter);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-tri-tex-uv-gouraud<f32>: vbOff=%u numTris=%u texId=%u texRep=%d texFlt=%d\n", vbOff, numTris, dlTexId, dlTexRepeat, dlTexFilter);
                sdvg_SetFillColorARGB(c32);
                sdvg_DrawTrianglesTexUVGouraudVBO32(gl_buf_id,
                                                    vbOff,
@@ -831,10 +753,7 @@ void _MinnieDrawable::draw() {
                vbOff   = Dstream_read_i32(buf_draw);
                numTris = Dstream_read_i32(buf_draw);
                c32     = Dstream_read_i32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-tri-tex-uv-gouraud-decal<f32>: vbOff=%u numTris=%u texId=%u texRep=%d texFlt=%d\n", vbOff, numTris, dlTexId, dlTexRepeat, dlTexFilter);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-tri-tex-uv-gouraud-decal<f32>: vbOff=%u numTris=%u texId=%u texRep=%d texFlt=%d\n", vbOff, numTris, dlTexId, dlTexRepeat, dlTexFilter);
                sdvg_SetFillColorARGB(c32);
                sdvg_DrawTrianglesTexUVGouraudDecalVBO32(gl_buf_id,
                                                         vbOff,
@@ -848,10 +767,7 @@ void _MinnieDrawable::draw() {
                numVerts = Dstream_read_i32(buf_draw);
                c32      = Dstream_read_i32(buf_draw);
                strokeW  = Dstream_read_f32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-line-strip-flat<s14.2>: vbOff=%u numVerts=%u strokeW=%f\n", vbOff, numVerts, strokeW);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-line-strip-flat<s14.2>: vbOff=%u numVerts=%u strokeW=%f\n", vbOff, numVerts, strokeW);
                sdvg_SetStrokeColorARGB(c32);
                sdvg_SetStrokeWidth(strokeW);
                sdvg_DrawLineStripFlatAAVBO14_2(gl_buf_id,
@@ -866,10 +782,7 @@ void _MinnieDrawable::draw() {
                numVerts = Dstream_read_i32(buf_draw);
                c32      = Dstream_read_i32(buf_draw);
                strokeW  = Dstream_read_f32(buf_draw);
-               if(b_debug_draw_list)
-               {
-                  Dyac_host_printf("[trc] MinnieDrawable::draw: draw-line-strip-flat-bevel<s14.2>: vbOff=%u numVerts=%u strokeW=%f\n", vbOff, numVerts, strokeW);
-               }
+               Ddebug_draw_list_printf("[trc] MinnieDrawable::draw: draw-line-strip-flat-bevel<s14.2>: vbOff=%u numVerts=%u strokeW=%f\n", vbOff, numVerts, strokeW);
                sdvg_SetStrokeColorARGB(c32);
                sdvg_SetStrokeWidth(strokeW);
                sdvg_DrawLineStripFlatBevelAAVBO14_2(gl_buf_id,
