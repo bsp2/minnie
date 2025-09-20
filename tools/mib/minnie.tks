@@ -1,16 +1,24 @@
 // ----
 // ---- file   : minnie.tks
-// ---- author : bsp
-// ---- legal  : Distributed under terms of the MIT LICENSE.
+// ---- author : Bastian Spiegel <bs@tkscript.de>
+// ---- legal  : Copyright 2020-2025 by Bastian Spiegel.
+// ----
+// ----           This program is free software; you can redistribute it and/or modify
+// ----           it under the terms of the GNU General Public License as published by
+// ----           the Free Software Foundation; either version 2 of the License, or
+// ----           (at your option) any later version.
+// ----       
+// ----           This program is distributed in the hope that it will be useful,
+// ----           but WITHOUT ANY WARRANTY; without even the implied warranty of
+// ----           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// ----           GNU General Public License for more details.
+// ----       
+// ----           You should have received a copy of the GNU General Public License
+// ----           along with this program; if not, write to the Free Software
+// ----           Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // ----
 // ---- info   : "minnie" script to binary compiler
 // ---- note   :
-// ----
-// ---- created: 27May2024
-// ---- changed: 28May2024, 29May2024, 30May2024, 31May2024, 01Jun2024, 02Jun2024, 03Jun2024
-// ----          04Jun2024, 05Jun2024, 07Jun2024, 08Jun2024, 09Jun2024, 10Jun2024, 11Jun2024
-// ----          05Jul2025, 12Jul2025, 01Aug2025, 02Aug2025, 03Aug2025, 04Aug2025, 08Aug2025
-// ----          09Aug2025, 16Aug2025, 17Aug2025, 18Sep2025
 // ----
 // ----
 // ----
