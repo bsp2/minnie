@@ -17,9 +17,13 @@ endif
 SHADERVG_OBJ= \
 	../shadervg/Shader.o \
 	../shadervg/Shape.o \
+	../shadervg/text.o \
 	../shadervg/shadervg.o
 
 YAC_EXTRA_HEADERS += ../shadervg/shadervg.h
+YAC_EXTRA_HEADERS += ../shadervg/text.h
+YAC_EXTRA_HEADERS += ../minnie.h
+YAC_EXTRA_HEADERS += ../MinnieDrawable.h
 
 ALL_OBJ+= $(SHADERVG_OBJ)
 
