@@ -54,6 +54,7 @@ YAC_Host *yac_host;
 #include "ying_shadervg.h"
 #include "ying_shadervg.cpp"
 #include "ying_shadervg__sdvg_constants_class.cpp"
+#include "ying_shadervg_ShaderVG_Font.cpp"
 
 
 // Implement standard exception ID variables (see yac.h)

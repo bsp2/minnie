@@ -507,7 +507,7 @@ sBool ShaderVG_Shape::validateShapeShader(void) {
 
 sBool ShaderVG_Shape::createShapeShader(const char *_sVS, const char *_sFS) {
 
-   // Dsdvg_debugprintfv("xxx ShaderVG_Shape::createShapeShader: ENTER\n");
+   Dsdvg_debugprintfvv("[trc] ShaderVG_Shape::createShapeShader: ENTER\n");
 
    if(!shape_shader.create(_sVS, _sFS))
    {
@@ -559,7 +559,7 @@ sBool ShaderVG_Shape::createShapeShader(const char *_sVS, const char *_sFS) {
    sBool r = validateShapeShader();
    if(!r)
    {
-      // Dsdvg_debugprintfv("xxx ShaderVG_Shape: shape_a_vertex=%d shape_u_transform=%d\n", shape_a_vertex, shape_u_transform);
+      Dsdvg_debugprintfvv("[trc] ShaderVG_Shape: shape_a_vertex=%d shape_u_transform=%d\n", shape_a_vertex, shape_u_transform);
       Dsdvg_errorprintf("[---] ShaderVG_Shape::createShapeShader: validateShapeShader() failed\n");
    }
    return r;

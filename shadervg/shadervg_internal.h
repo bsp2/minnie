@@ -37,7 +37,6 @@
 extern sF32 sdvg_pixel_scl;  // vp/proj (aa_range, stroke_w)
 extern sBool sdvg_b_glcore;
 
-
 // -----------  internal -----------
 void BindScratchBuffer (void);
 void UnbindScratchBuffer (void);
@@ -64,14 +63,15 @@ void sdvg_unmap_scratch_before_draw (void);
 void sdvg_remap_scratch_after_draw (void);
 #endif // SHADERVG_UNMAP_SCRATCHVBO_DURING_DRAW
 
-
 // ----------- Log helper macros -----------
-#define Dsdvg_printf       if(0);else Dyac_host_printf
-#define Dsdvg_tracecall    if(1);else Dsdvg_printf
-#define Dsdvg_warnprintf   if(0);else Dsdvg_printf
-#define Dsdvg_errorprintf  if(0);else Dsdvg_printf
-#define Dsdvg_debugprintf  if(0);else Dsdvg_printf
-#define Dsdvg_debugprintfv if(1);else Dsdvg_printf
+#define Dsdvg_printf        if(0);else Dyac_host_printf
+#define Dsdvg_tracecall     if(1);else Dsdvg_printf
+#define Dsdvg_tracecallv    if(1);else Dsdvg_printf
+#define Dsdvg_warnprintf    if(0);else Dsdvg_printf
+#define Dsdvg_errorprintf   if(0);else Dsdvg_printf
+#define Dsdvg_debugprintf   if(0);else Dsdvg_printf
+#define Dsdvg_debugprintfv  if(1);else Dsdvg_printf
+#define Dsdvg_debugprintfvv if(1);else Dsdvg_printf
 
 // ----------- OpenGL helper macros -----------
 #ifdef SHADERVG_USE_SCRATCHBUFFERSUBDATA
