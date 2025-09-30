@@ -277,6 +277,31 @@ Deprecated, will be removed in future versions.
 */
 YF void YAC_CALL sdvg_SetAAExp (sF32 _aaExp);
 
+/* @function sdvg_SetAlphaSDFRange,float aMin,float aMax
+Set alpha range of distance field textures.
+
+This controls the bluriness of e.g. anti-aliased glyph edges during text rendering.
+
+@arg aMin Alpha range start (0..1, e.g. 0.8)
+@arg aMax Alpha range end (0..1, e.g. 0.95)
+
+@see sdvg_SetAlphaSDFExp
+@see sdvg_DrawTrianglesTexUVFlatVBO32AlphaSDF
+@see sdvg_BeginTexturedTrianglesAlphaSDF
+*/
+YF void YAC_CALL sdvg_SetAlphaSDFRange (sF32 _aMin, sF32 _aMax);
+
+/* @function sdvg_SetAlphaSDFExp,float aExp
+Set exponent of output alpha
+
+@arg aExp Alpha exponent (gamma correction) (def=0.7)
+
+@see sdvg_SetAlphaSDFRange
+@see sdvg_DrawTrianglesTexUVFlatVBO32AlphaSDF
+@see sdvg_BeginTexturedTrianglesAlphaSDF
+*/
+YF void YAC_CALL sdvg_SetAlphaSDFExp (sF32 _aExp);
+
 // -------- render state (fill / stroke) --------
 /* @function sdvg_SetFillColor4f,float fillR,float fillG,float fillB,float A
 Set fill color (normalized floats)
@@ -816,6 +841,7 @@ Destroy framebuffer object
 YF void YAC_CALL sdvg_DestroyFBO (sUI _fboIdx);
 
 // -------- texturing --------
+
 /* @function sdvg_CreateTexture2D,int texFmt,int w,int h,Object data:int
 Create and allocate 2D texture
 @arg texFmt  §SDVG_TEXFMT_ALPHA8, §SDVG_TEXFMT_RGB565, §SDVG_TEXFMT_BGRA8888, §SDVG_TEXFMT_ARGB32, §SDVG_TEXFMT_RGBA8888, §
@@ -824,6 +850,7 @@ Create and allocate 2D texture
 @arg data Initial pixel data or null (only reserve memory)
 @return OpenGL texture id
 
+@see sdvg_UpdateTexture2D
 @see sdvg_BindMultiTexture2D
 @see sdvg_UnbindMultiTexture2D
 @see sdvg_BindTexture2D
@@ -835,10 +862,29 @@ sUI YAC_CALL sdvg_CreateTexture2D (sUI _texfmt, sUI _w, sUI _h, const void *_dat
 YF sUI YAC_CALL _sdvg_CreateTexture2D (sUI _texfmt, sUI _w, sUI _h, YAC_Object *_data);
 #endif // SHADERVG_SCRIPT_API
 
+/* @function sdvg_UpdateTexture2D,int texFmt,int w,int h,Object data
+Update contents of currently bound 2D texture
+@arg texFmt  §SDVG_TEXFMT_ALPHA8, §SDVG_TEXFMT_RGB565, §SDVG_TEXFMT_BGRA8888, §SDVG_TEXFMT_ARGB32, §SDVG_TEXFMT_RGBA8888, §
+@arg w Width
+@arg h Height
+@arg data New pixel data
+
+@see sdvg_BindMultiTexture2D
+@see sdvg_UnbindMultiTexture2D
+@see sdvg_BindTexture2D
+@see sdvg_UnbindTexture2D
+@see sdvg_DestroyTexture2D
+*/
+void YAC_CALL sdvg_UpdateTexture2D (sUI _texfmt, sUI _w, sUI _h, const void *_data, sUI _dataSz);
+#ifdef SHADERVG_SCRIPT_API
+YF void YAC_CALL _sdvg_UpdateTexture2D (sUI _texfmt, sUI _w, sUI _h, YAC_Object *_data);
+#endif // SHADERVG_SCRIPT_API
+
 /* @function sdvg_BindMultiTexture2D,int unitIdx,int texId,boolean bRepeat,boolean bFilter
 Bind texture to given texture unit
 
 @see sdvg_CreateTexture2D
+@see sdvg_UpdateTexture2D
 @see sdvg_UnbindMultiTexture2D
 @see sdvg_BindTexture2D
 @see sdvg_UnbindTexture2D
@@ -850,6 +896,7 @@ YF void YAC_CALL sdvg_BindMultiTexture2D (sUI _unitIdx, sUI _texId, sBool _bRepe
 Unbind texture from given texture unit
 
 @see sdvg_CreateTexture2D
+@see sdvg_UpdateTexture2D
 @see sdvg_BindMultiTexture2D
 @see sdvg_BindTexture2D
 @see sdvg_UnbindTexture2D
@@ -861,6 +908,7 @@ YF void YAC_CALL sdvg_UnbindMultiTexture2D (sUI _unitIdx);
 Bind texture to default texture unit
 
 @see sdvg_CreateTexture2D
+@see sdvg_UpdateTexture2D
 @see sdvg_BindMultiTexture2D
 @see sdvg_UnbindMultiTexture2D
 @see sdvg_UnbindTexture2D
@@ -872,6 +920,7 @@ YF void YAC_CALL sdvg_BindTexture2D (sUI _texId, sBool _bRepeat, sBool _bFilter)
 Unbind texture from default texture unit
 
 @see sdvg_CreateTexture2D
+@see sdvg_UpdateTexture2D
 @see sdvg_BindMultiTexture2D
 @see sdvg_UnbindMultiTexture2D
 @see sdvg_BindTexture2D
@@ -883,6 +932,7 @@ YF void YAC_CALL sdvg_UnbindTexture2D (void);
 Destroy texture
 
 @see sdvg_CreateTexture2D
+@see sdvg_UpdateTexture2D
 @see sdvg_BindMultiTexture2D
 @see sdvg_UnbindMultiTexture2D
 @see sdvg_BindTexture2D
@@ -1351,6 +1401,21 @@ VBO vertex format (20 bytes per vertex):<br>
 */
 YF void YAC_CALL sdvg_DrawTrianglesTexUVGouraudDecalVBO32Alpha (sUI _vboId, sUI _byteOffset, sUI _numVerts);
 
+/* @function sdvg_DrawTrianglesTexUVFlatVBO32AlphaSDF,int vboId,int byteOffset,int numVerts
+Draw previously prepared vertex buffer as alpha-SDF-texture mapped triangles (32bit float format)
+
+<pre>
+VBO vertex format (16 bytes per vertex):<br>
+    +0  f32 x<br>
+    +4  f32 y<br>
+    +8  f32 u<br>
+    +12 f32 v<br>
+</pre>
+
+@see sdvg_SetAlphaSDFRange
+*/
+YF void YAC_CALL sdvg_DrawTrianglesTexUVFlatVBO32AlphaSDF (sUI _vboId, sUI _byteOffset, sUI _numVerts);
+
 /* @function sdvg_DrawLineStripFlatVBO14_2,int vboId,int byteOffset,int numPoints
 Draw previously prepared vertex buffer as line strip (14.2 fixed point format)
 
@@ -1590,6 +1655,49 @@ YF void YAC_CALL _sdvg_Uniform1i (YAC_String *_name, sSI _i);
 #endif // SHADERVG_SCRIPT_API
 
 // -------- (high level) draw functions --------
+
+/* @function sdvg_PaintSolid
+Select solid paint
+
+@see sdvg_PaintLinear
+@see sdvg_PaintRadial
+@see sdvg_PaintConic
+*/
+YF void YAC_CALL sdvg_PaintSolid (void);
+
+/* @function sdvg_PaintLinear,float startX,float startY,float endX,float endY
+Select linear paint
+
+@see sdvg_PaintSolid
+@see sdvg_PaintRadial
+@see sdvg_PaintConic
+*/
+YF void YAC_CALL sdvg_PaintLinear (sF32 _startX, sF32 _startY, sF32 _endX, sF32 _endY);
+
+/* @function sdvg_PaintRadial,float startX,float startY,float radiusX,float radiusY
+Select radial paint
+
+@see sdvg_PaintSolid
+@see sdvg_PaintLinear
+@see sdvg_PaintConic
+*/
+YF void YAC_CALL sdvg_PaintRadial (sF32 _startX, sF32 _startY, sF32 _radiusX, sF32 _radiusY);
+
+/* @function sdvg_PaintConic,float startX,float startY,float radiusX,float radiusY,float angle01
+Select conic paint
+
+@arg startX
+@arg startY
+@arg radiusX
+@arg radiusY
+@arg angle01 Normalized start angle (0..1 => 0..360 degrees). 0=north
+
+@see sdvg_PaintSolid
+@see sdvg_PaintLinear
+@see sdvg_PaintRadial
+*/
+YF void YAC_CALL sdvg_PaintConic (sF32 _startX, sF32 _startY, sF32 _radiusX, sF32 _radiusY, sF32 _angle01);
+
 /* @function sdvg_BeginVBO,int numVertices,int stride:boolean
 Begin preparation of mapped vertex buffer
 
@@ -1749,6 +1857,15 @@ Begin preparation or rendering of alpha-channel-only textured, gouraud shaded tr
 @arg numVertices Number of vertices
 */
 YF sBool YAC_CALL sdvg_BeginTexturedGouraudTriangleStripAlpha (sUI _numVertices);
+
+/* @function sdvg_BeginTexturedTrianglesAlphaSDF,int numVertices:boolean
+Begin preparation or rendering of alpha-SDF-channel-only textured triangles
+
+@arg numVertices Number of vertices
+
+@see sdvg_SetAlphaSDFRange
+*/
+YF sBool YAC_CALL sdvg_BeginTexturedTrianglesAlphaSDF (sUI _numVertices);
 
 /* @function sdvg_BeginLineStrip,int numPoints:boolean
 Begin preparation or rendering of line strip
@@ -2081,6 +2198,19 @@ Split packed ARGB32 color into hue / saturation / value / alpha components
 @return Alpha channel (0..255)
 */
 sU8 sdvg_ARGBToHSVA (sU32 _c32, sF32 *_retH, sF32 *_retS, sF32 *_retV);
+
+/* @function sdvg_GradientToTexture,Texture dst,IntArray colors,IntArray starts
+Convert gradient (colors + start positions) to ARGB32 texture.
+
+The first start position must be 0, and the last position determines the total gradient size.
+
+@arg dst Destination texture. Allocation size (at least 1) determines resolution of interpolated gradient.
+@arg colors ARGB32 color array. Number of elements must be at least two and determines number of gradient entries.
+@arg starts Color start positions. Number of elements must be greater or equal to 'colors' array size.
+@arg bSmoothStep false=linear interpolation  true=smoothstep interpolation
+*/
+void YAC_CALL sdvg_GradientToTexture (sU32 *_dst, sU32 _dstW, const sU32 *_colors, sU32 _numColors, const sSI *_starts, sUI _numStarts, sBool _bSmoothStep);
+
 #ifdef SHADERVG_SCRIPT_API
 YF sU32 YAC_CALL _sdvg_ARGB (sUI _a, sUI _r, sUI _g, sUI _b);
 YF sU32 YAC_CALL _sdvg_MixARGBx (sU32 _x, sU32 _y, sUI _t);
@@ -2089,6 +2219,7 @@ YF sU32 YAC_CALL _sdvg_TintRGBAlpha (sU32 _x, sU32 _y, sUI _a8);
 YF sU32 YAC_CALL _sdvg_RGBAlpha (sU32 _c32, sUI _a8);
 YF sU32 YAC_CALL _sdvg_HSVAToARGB (sF32 _h, sF32 _s, sF32 _v, sUI _a8);
 YF sUI YAC_CALL _sdvg_ARGBToHSVA (sU32 _c32, YAC_Object *_retH, YAC_Object *_retS, YAC_Object *_retV);
+YF void YAC_CALL _sdvg_GradientToTexture (YAC_Object *_tex, YAC_Object *_colors, YAC_Object *_starts, sBool _bSmoothStep);
 #endif // SHADERVG_SCRIPT_API
 
 

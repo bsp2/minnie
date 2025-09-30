@@ -40,7 +40,7 @@ putenv("TKSDL_GLERROR=1");
 float VP_W = 640.0;
 float VP_H = 480.0;
 
-float vp_scale = 2.0;
+float vp_scale = 1;
 
 boolean b_anim      = 0;    // SPACE
 boolean b_slomo     = 0;    // lctrl-SPACE
@@ -140,7 +140,15 @@ int RENDER_TEXT_4_UL                                   = 56;
 int RENDER_TEXT_5_UL_CLIP                              = 57;
 int RENDER_TEXT_6_ACCEL                                = 58;
 int RENDER_TEXT_7_ACCEL_CLIP                           = 59;
-int NUM_RENDER_MODES                                   = 60;  // UP/DOWN
+int RENDER_TEXT_8_ZOOM                                 = 60;
+int RENDER_TEXT_9_ZOOM_SDF                             = 61;
+int RENDER_GRADIENT_TO_TEXTURE                         = 62;
+int RENDER_TRIANGLES_GRADIENT_LINEAR                   = 63;
+int RENDER_TRIANGLES_GRADIENT_RADIAL                   = 64;
+int RENDER_TRIANGLES_GRADIENT_CONIC                    = 65;
+int RENDER_POLYGON_VBO                                 = 66;
+int RENDER_POLYGON_AA_VBO                              = 67;
+int NUM_RENDER_MODES                                   = 68;  // UP/DOWN
 
 int render_mode = RENDER_RECT_FILL_AA;
 // int render_mode = RENDER_ELLIPSE_FILL_AA;
@@ -235,6 +243,14 @@ StringArray mode_names = [/*  0 */ "rect_fill_aa",
                           /* 57 */ "text_5_ul_clip",
                           /* 58 */ "text_6_accel",
                           /* 59 */ "text_7_accel_clip",
+                          /* 60 */ "text_8_zoom",
+                          /* 61 */ "text_9_zoom_sdf",
+                          /* 62 */ "gradient_to_texture",
+                          /* 63 */ "triangles_gradient_linear",
+                          /* 64 */ "triangles_gradient_radial",
+                          /* 65 */ "triangles_gradient_conic",
+                          /* 66 */ "polygon_vbo",
+                          /* 67 */ "polygon_aa_vbo",
                           ];
 
 int tex_id;
@@ -246,6 +262,20 @@ Texture tex_alpha_data;
 Texture       font_tex;
 Buffer        font_bin;
 ShaderVG_Font font;
+
+Texture       font_zoom_tex;
+Buffer        font_zoom_bin;
+ShaderVG_Font font_zoom;
+
+Texture       font_zoom_sdf_tex;
+Buffer        font_zoom_sdf_bin;
+ShaderVG_Font font_zoom_sdf;
+
+IntArray gradient_colors = [#FF00ffff, #FF10cf40, #FFefdf30, #FF2040ff, #FF00ffff];
+IntArray gradient_starts = [0,         200,       400,       500,       1000];
+Texture tex_gradient;
+tex_gradient.alloc(256,1,4);
+int tex_gradient_id;
 
 Buffer buf_vbo; buf_vbo.size = 16384;
 int    buf_vbo_id;
@@ -1499,6 +1529,350 @@ function TestText_7_Accel_Clip() {
    sdvg_UnbindFont();
 }
 
+// ---------------------------------------------------------------------------- TestText_8_Zoom
+function TestText_8_Zoom(boolean _bSDF) {
+   sdvg_BindFont(_bSDF ? font_zoom_sdf : font_zoom, true/*bFilter*/);
+   sdvg_EnableBlending();
+   sdvg_SetColorARGB(#ffffffff);
+
+   String s <= "Hello, world.\nmulti-line\ntext-test.";
+
+   Integer minX, maxX, minY, maxY;
+   sdvg_TextBBox(_bSDF ? font_zoom_sdf : font_zoom, s, minX, maxX, minY, maxY);
+   int w = (maxX - minX);
+   int h = (maxY - minY);
+
+   float x = w * -0.5;
+   float y = h * -0.5;
+
+   float zoomRel = sin(ang_x*0.5) * 0.5 + 0.5;
+   float zoom = (1.0 + zoomRel * 8);
+   // trace "ang_x = "+ang_x+"f;";
+   // trace "ang_w = "+ang_w+"f;";
+
+   if(_bSDF)
+   {
+      sdvg_SetAlphaSDFRange( mathLerpf(0.83, 0.90, 1.0 - zoomRel),
+                             mathLerpf(0.99, 0.98, 1.0 - zoomRel)
+                             );
+      sdvg_SetAlphaSDFExp( mathLerpf(0.7, 0.5, 1.0 - zoomRel) );
+   }
+
+   float shift = sin(ang_y)*200.0f + 200.0f;
+
+   float g = 20.0*8;
+   float aspect = (float(Viewport.width) / Viewport.height);
+   Matrix4f mProj;
+   mProj.initOrtho(-g * zoom * aspect, g * zoom * aspect,
+                   g * zoom/*bottom*/,  -g * zoom/*top*/,
+                   0.0f/*znear*/,  10.0f/*zfar*/
+                   );
+   mProj.rotatef(0.0f, 0.0f, sin(ang_h*4.0)*(PI*0.25));
+   mProj.translatef(shift, shift, 0.0f);
+   sdvg_SetTransform(mProj);
+
+   sdvg_DrawText(s, x - minX, y - minY);
+
+   sdvg_UnbindFont();
+}
+
+// ---------------------------------------------------------------------------- TestGradientToTexture
+function TestGradientToTexture() {
+
+   float start1 = sin(ang_x) * 200 + 220;
+   float len1   = sin(ang_y) * 500 + 520;
+   float len2   = sin(ang_w) * 300 + 320;
+   float len3   = sin(ang_h) * 400 + 420;
+
+   gradient_starts[1] = start1;
+   gradient_starts[2] = start1 + len1;
+   gradient_starts[3] = start1 + len1 + len2;
+   gradient_starts[4] = start1 + len1 + len2 + len3;
+
+   sdvg_BindTexture2D(tex_gradient_id, false/*bRepeat*/, true/*bFilter*/);
+   sdvg_GradientToTexture(tex_gradient, gradient_colors, gradient_starts, true/*bSmoothStep*/);
+   sdvg_UpdateTexture2D(SDVG_TEXFMT_ARGB32, tex_gradient.sx, tex_gradient.sy, tex_gradient);
+
+   sdvg_SetFillColor4f(1.0f, 1.0f, 1.0f, fill_alpha);
+   float w = 240;
+   float h = 180;
+   float x = (640-w)*0.5;
+   float y = (480-h)*0.5;
+   sdvg_BindShader(0);  // use built-in shader
+   if(sdvg_BeginTexturedTriangles(2*3))
+   {
+      // 1
+      sdvg_TexCoord2f(0.0f, 0.0f);
+      sdvg_Vertex2f(x, y);
+
+      sdvg_TexCoord2f(1.0f, 0.0f);
+      sdvg_Vertex2f(x+w, y);
+
+      sdvg_TexCoord2f(1.0f, 1.0f);
+      sdvg_Vertex2f(x+w, y+h);
+
+      // 2
+      sdvg_TexCoord2f(0.0f, 0.0f);
+      sdvg_Vertex2f(x, y);
+
+      sdvg_TexCoord2f(1.0f, 1.0f);
+      sdvg_Vertex2f(x+w, y+h);
+
+      sdvg_TexCoord2f(0.0f, 1.0f);
+      sdvg_Vertex2f(x, y+h);
+
+      sdvg_End();
+   }
+   sdvg_UnbindTexture2D();
+}
+
+// ---------------------------------------------------------------------------- TestTrianglesGradientLinear
+function TestTrianglesGradientLinear() {
+
+   float pdx = VP_W;
+   float pdy = VP_H;
+   float sa = sin(ang_w*0.5);
+   float ca = cos(ang_w*0.5);
+   float rx = pdx * ca - pdy * sa;
+   float ry = pdx * sa + pdy * ca;
+
+   sdvg_PaintLinear(VP_W/2, VP_H/2, rx, ry);
+   sdvg_BindTexture2D(tex_gradient_id, true/*bRepeat*/, true/*bFilter*/);
+
+   float w = 400;
+   float h = 300;
+   float x = sin(ang_x * 0.5) * 200.0 + (VP_W/2) - w*0.5;
+   float y = cos(ang_y * 0.5) * 200.0 + (VP_H/2) - h*0.5;
+
+   sdvg_BindShader(0);  // use built-in shader
+
+   sdvg_SetFillColor4f(0.5f, 0.5f, 0.5f, fill_alpha);
+   if(sdvg_BeginFilledTriangles(2*3))
+   {
+      // 1
+      sdvg_Vertex2f(0, 0);
+      sdvg_Vertex2f(VP_W, 0);
+      sdvg_Vertex2f(VP_W, VP_H);
+
+      // 2
+      sdvg_Vertex2f(0, 0);
+      sdvg_Vertex2f(VP_W, VP_H);
+      sdvg_Vertex2f(0, VP_H);
+
+      sdvg_End();
+   }
+
+   sdvg_SetFillColor4f(1.0f, 1.0f, 1.0f, fill_alpha);
+   if(sdvg_BeginFilledTriangles(2*3))
+   {
+      // 1
+      sdvg_Vertex2f(x, y);
+      sdvg_Vertex2f(x+w, y);
+      sdvg_Vertex2f(x+w, y+h);
+
+      // 2
+      sdvg_Vertex2f(x, y);
+      sdvg_Vertex2f(x+w, y+h);
+      sdvg_Vertex2f(x, y+h);
+
+      sdvg_End();
+   }
+}
+
+// ---------------------------------------------------------------------------- TestTrianglesGradientRadial
+function TestTrianglesGradientRadial() {
+
+   float px = sin(ang_w*2)*(VP_W/2) + (VP_W/2);
+   float py = sin(ang_h*2)*(VP_H/2) + (VP_H/2);
+
+   sdvg_PaintRadial(px, py, VP_W, VP_H);
+   sdvg_BindTexture2D(tex_gradient_id, true/*bRepeat*/, true/*bFilter*/);
+
+   float w = 400;
+   float h = 300;
+   float x = sin(ang_x * 0.5) * 200.0 + (VP_W/2) - w*0.5;
+   float y = cos(ang_y * 0.5) * 200.0 + (VP_H/2) - h*0.5;
+
+   sdvg_BindShader(0);  // use built-in shader
+
+   sdvg_SetFillColor4f(0.5f, 0.5f, 0.5f, fill_alpha);
+   if(sdvg_BeginFilledTriangles(2*3))
+   {
+      // 1
+      sdvg_Vertex2f(0, 0);
+      sdvg_Vertex2f(VP_W, 0);
+      sdvg_Vertex2f(VP_W, VP_H);
+
+      // 2
+      sdvg_Vertex2f(0, 0);
+      sdvg_Vertex2f(VP_W, VP_H);
+      sdvg_Vertex2f(0, VP_H);
+
+      sdvg_End();
+   }
+
+   sdvg_SetFillColor4f(1.0f, 1.0f, 1.0f, fill_alpha);
+   if(sdvg_BeginFilledTriangles(2*3))
+   {
+      // 1
+      sdvg_Vertex2f(x, y);
+      sdvg_Vertex2f(x+w, y);
+      sdvg_Vertex2f(x+w, y+h);
+
+      // 2
+      sdvg_Vertex2f(x, y);
+      sdvg_Vertex2f(x+w, y+h);
+      sdvg_Vertex2f(x, y+h);
+
+      sdvg_End();
+   }
+}
+
+// ---------------------------------------------------------------------------- TestTrianglesGradientConic
+function TestTrianglesGradientConic() {
+
+   float px = sin(ang_w*2)*(VP_W/2) + (VP_W/2);
+   float py = sin(ang_h*2)*(VP_H/2) + (VP_H/2);
+
+   float ang = mathWrapf((ang_c * 8.0) / 2PI, 0, 1);
+
+   sdvg_PaintConic(px, py, VP_W, VP_H, ang);
+   // sdvg_PaintConic(VP_W/2, VP_H/2, VP_W/2, VP_H/2, ang);
+   sdvg_BindTexture2D(tex_gradient_id, true/*bRepeat*/, true/*bFilter*/);
+
+   float w = 400;
+   float h = 300;
+   float x = sin(ang_x * 0.5) * 200.0 + (VP_W/2) - w*0.5;
+   float y = cos(ang_y * 0.5) * 200.0 + (VP_H/2) - h*0.5;
+
+   // x = 0;
+   // y = 0;
+   // w = 640;
+   // h = 480;
+
+   sdvg_BindShader(0);  // use built-in shader
+
+   sdvg_SetFillColor4f(0.5f, 0.5f, 0.5f, fill_alpha);
+   if(sdvg_BeginFilledTriangles(2*3))
+   {
+      // 1
+      sdvg_Vertex2f(0, 0);
+      sdvg_Vertex2f(VP_W, 0);
+      sdvg_Vertex2f(VP_W, VP_H);
+
+      // 2
+      sdvg_Vertex2f(0, 0);
+      sdvg_Vertex2f(VP_W, VP_H);
+      sdvg_Vertex2f(0, VP_H);
+
+      sdvg_End();
+   }
+
+   sdvg_SetFillColor4f(1.0f, 1.0f, 1.0f, fill_alpha);
+   if(sdvg_BeginFilledTriangles(2*3))
+   {
+      // 1
+      sdvg_Vertex2f(x, y);
+      sdvg_Vertex2f(x+w, y);
+      sdvg_Vertex2f(x+w, y+h);
+
+      // 2
+      sdvg_Vertex2f(x, y);
+      sdvg_Vertex2f(x+w, y+h);
+      sdvg_Vertex2f(x, y+h);
+
+      sdvg_End();
+   }
+}
+
+// ---------------------------------------------------------------------------- TestPolygon_VBO
+int polygon_vbo_id = 0;
+function TestPolygon_VBO() {
+   if(0 == polygon_vbo_id)
+   {
+      // Create + initialize VBO
+      polygon_vbo_id = sdvg_CreateVBO(256);
+      sdvg_MapVBO(polygon_vbo_id);
+      if(sdvg_BeginVBO(8, 8))
+      {
+         sdvg_Vertex2f( 30, 90);
+         sdvg_Vertex2f(320, 20);
+         sdvg_Vertex2f(640, 80);
+         sdvg_Vertex2f(600, 200);
+         sdvg_Vertex2f(300, 220);
+         sdvg_Vertex2f(500, 360);
+         sdvg_Vertex2f(300, 470);
+         sdvg_Vertex2f(120, 300);
+
+         sdvg_End();
+      }
+      sdvg_UnmapVBO();
+   }
+   if(polygon_vbo_id >= 0)
+   {
+      sdvg_SetGlobalAlpha(1.0);
+      sdvg_SetFillColor4f(0.1f, 0.7f, 0.6f, 1.0);
+
+      Matrix4f m <= sdvg_GetTransformRef();
+      m.translatef(VP_W/2, VP_H/2, 0.0f);
+      m.rotatef(0.0f, 0.0f, ang_w);
+      m.translatef(-VP_W/2, -VP_H/2, 0.0f);
+
+      // Draw pre-initialized VBO
+      sdvg_DrawPolygonFillFlatVBO32(polygon_vbo_id, 0/*byteOffset*/, 8/*numVerts*/);
+      sdvg_BindVBO(0);
+   }
+}
+
+// ---------------------------------------------------------------------------- TestPolygon_AA_VBO
+function TestPolygon_AA_VBO() {
+   if(0 == polygon_vbo_id)
+   {
+      // Create + initialize VBO
+      polygon_vbo_id = sdvg_CreateVBO(256);
+      sdvg_MapVBO(polygon_vbo_id);
+      if(sdvg_BeginVBO(8+1, 8))
+      {
+         sdvg_Vertex2f( 30,  90);
+         sdvg_Vertex2f(320,  20);
+         sdvg_Vertex2f(640,  80);
+         sdvg_Vertex2f(600, 200);
+         sdvg_Vertex2f(300, 220);
+         sdvg_Vertex2f(500, 360);
+         sdvg_Vertex2f(300, 470);
+         sdvg_Vertex2f(120, 300);
+         sdvg_Vertex2f( 30,  90);  // closed polyline
+
+         sdvg_End();
+      }
+      sdvg_UnmapVBO();
+   }
+   if(polygon_vbo_id >= 0)
+   {
+      sdvg_SetGlobalAlpha(1.0);
+
+      sdvg_SetFillColor4f  (0.1f, 0.7f, 0.7f, 1.0);
+      if(sdvg_GetEnableDebug())
+         sdvg_SetStrokeColor4f(1.0f, 1.0f, 1.0f, 1.0);
+      else
+         sdvg_SetStrokeColor4f(0.1f, 0.7f, 0.7f, 1.0);
+
+      Matrix4f m <= sdvg_GetTransformRef();
+      m.translatef(VP_W/2, VP_H/2, 0.0f);
+      m.rotatef(0.0f, 0.0f, ang_w);
+      m.translatef(-VP_W/2, -VP_H/2, 0.0f);
+
+      // Draw pre-initialized VBO
+      sdvg_DrawPolygonFillFlatVBO32(polygon_vbo_id, 0/*byteOffset*/, 8/*numVerts*/);
+
+      // Draw pre-initialized VBO
+      sdvg_SetStrokeWidth(1.0f);
+      sdvg_DrawLineStripFlatAAVBO32(polygon_vbo_id, 0/*byteOffset*/, 8+1/*numVerts*/);
+
+      sdvg_BindVBO(0);
+   }
+}
+
 // ---------------------------------------------------------------------------- onDraw
 function onDraw() {
 
@@ -1541,6 +1915,7 @@ function onDraw() {
    sdvg_SetFillColor4f(0.1f, 0.4f, 0.25f, fill_alpha);
    sdvg_SetStrokeColor4f(1.0f, 1.0f, 1.0f, fill_alpha);
    sdvg_SetGlobalAlpha(1.0f);
+   sdvg_PaintSolid();
 
    switch(test_idx)
    {
@@ -1911,6 +2286,38 @@ function onDraw() {
       case RENDER_TEXT_7_ACCEL_CLIP:
          TestText_7_Accel_Clip();
          break;
+
+      case RENDER_TEXT_8_ZOOM:
+         TestText_8_Zoom(false/*bSDF*/);
+         break;
+
+      case RENDER_TEXT_9_ZOOM_SDF:
+         TestText_8_Zoom(true/*bSDF*/);
+         break;
+
+      case RENDER_GRADIENT_TO_TEXTURE:
+         TestGradientToTexture();
+         break;
+
+      case RENDER_TRIANGLES_GRADIENT_LINEAR:
+         TestTrianglesGradientLinear();
+         break;
+
+      case RENDER_TRIANGLES_GRADIENT_RADIAL:
+         TestTrianglesGradientRadial();
+         break;
+
+      case RENDER_TRIANGLES_GRADIENT_CONIC:
+         TestTrianglesGradientConic();
+         break;
+
+      case RENDER_POLYGON_VBO:
+         TestPolygon_VBO();
+         break;
+
+      case RENDER_POLYGON_AA_VBO:
+         TestPolygon_AA_VBO();
+         break;
    }
 
    sdvg_EndFrame();
@@ -1942,18 +2349,23 @@ function onDraw() {
 
 // ---------------------------------------------------------------------------- ResetParams
 function ResetParams() {
-   aa_range    = 2.5 / vp_scale;
-   aa_exp      = 1.0;
-   stroke_w    = 1.5;
-   fill_alpha  = 1.0;
-   decal_alpha = 1.0;
-   radius_sclx = 1.0;
-   radius_scly = 1.0;
+   aa_range    = 2.5f / vp_scale;
+   aa_exp      = 1.0f;
+   stroke_w    = 1.5f;
+   fill_alpha  = 1.0f;
+   decal_alpha = 1.0f;
+   radius_sclx = 1.0f;
+   radius_scly = 1.0f;
+   ang_x       = 0.0f;
+   ang_y       = 0.0f;
+   ang_w       = 0.0f;
+   ang_h       = 0.0f;
+   ang_c       = 0.0f;
    trace "[...] reset";
    if(2 == test_idx)
    {
-      stroke_w = 0.375;
-      aa_range = 0.75;
+      stroke_w = 0.375f;
+      aa_range = 0.75f;
    }
 }
 
@@ -2209,6 +2621,8 @@ function onOpen() {
 
    tex_id = sdvg_CreateTexture2D(SDVG_TEXFMT_BGRA8888, tex_data.sx, tex_data.sy, tex_data);
    tex_alpha_id = sdvg_CreateTexture2D(SDVG_TEXFMT_ALPHA8, tex_alpha_data.sx, tex_alpha_data.sy, tex_alpha_data);
+   sdvg_GradientToTexture(tex_gradient, gradient_colors, gradient_starts, true/*bSmoothStep*/);
+   tex_gradient_id = sdvg_CreateTexture2D(SDVG_TEXFMT_ARGB32, tex_gradient.sx, tex_gradient.sy, tex_gradient);
    trace "[dbg] onOpen: tex_id="+tex_id+" tex_alpha_id="+tex_alpha_id;
 
    custom_shader_idx_1 = 0;
@@ -2216,8 +2630,11 @@ function onOpen() {
    custom_shader_idx_3 = 0;
    test_text_3_shader_idx = 0;
    custom_vbo_id_3 = 0;
+   polygon_vbo_id = 0;
 
    sdvg_FontOnOpen(font);
+   sdvg_FontOnOpen(font_zoom);
+   sdvg_FontOnOpen(font_zoom_sdf);
 }
 
 // ---------------------------------------------------------------------------- onClose
@@ -2264,28 +2681,34 @@ function onClose() {
       custom_vbo_id_3 = 0;
    }
 
+   if(0 != polygon_vbo_id)
+   {
+      sdvg_DestroyVBO(polygon_vbo_id);
+      polygon_vbo_id = 0;
+   }
+
    sdvg_DestroyTexture2D(tex_id);
    sdvg_DestroyTexture2D(tex_alpha_id);
 }
 
 // ---------------------------------------------------------------------------- LoadFont
-function LoadFont(String _pathPrefix) {
+function LoadFont(String _pathPrefix, ShaderVG_Font _font, Buffer _fontBin, Texture _fontTex) {
    File fBin;
    if(fBin.openLocal(_pathPrefix+".bin", IOS_IN))
    {
-      fBin.readBuffer(font_bin, 0, fBin.size, true/*bResize*/);
+      fBin.readBuffer(_fontBin, 0, fBin.size, true/*bResize*/);
       fBin.close();
-      font_bin.offset = font_bin.size;
+      _fontBin.offset = _fontBin.size;
 
-      if(font_tex.loadLocalImage(_pathPrefix+".png", 0,0,1))
+      if(_fontTex.loadLocalImage(_pathPrefix+".png", 0,0,1))
       {
-         if(sdvg_InitFont(font, font_bin, font_tex.sx, font_tex.sy, font_tex))
+         if(sdvg_InitFont(_font, _fontBin, _fontTex.sx, _fontTex.sy, _fontTex))
          {
             trace "[...] LoadFont: OK, font \""+_pathPrefix+"\" loaded";
             if(0)
             {
-               trace "[trc]   StringWidth()="+sdvg_TextWidth(font, "hello, world.");
-               trace "[trc]   StringHeight()="+sdvg_TextHeight(font, "hello, world.");
+               trace "[trc]   StringWidth()="+sdvg_TextWidth(_font, "hello, world.");
+               trace "[trc]   StringHeight()="+sdvg_TextHeight(_font, "hello, world.");
             }
          }
          else
@@ -2319,8 +2742,10 @@ function main() {
    tex_alpha_data.alloc(tex_data.sx, tex_data.sy, 1);
    tex_alpha_data.scaleFrom(tex_data);
 
-   // Load font
-   LoadFont("../../tools/font_convert/out/default_30");
+   // Load fonts
+   LoadFont("../../tools/font_convert/out/default_30",      font,          font_bin,          font_tex);
+   LoadFont("../../tools/font_convert/out/default_256",     font_zoom,     font_zoom_bin,     font_zoom_tex);
+   LoadFont("../../tools/font_convert/out/default_256_sdf", font_zoom_sdf, font_zoom_sdf_bin, font_zoom_sdf_tex);
 
    use callbacks;
 

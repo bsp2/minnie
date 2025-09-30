@@ -87,6 +87,17 @@ class ShaderVG_Shape {
    sSI shape_u_debug;            // optional
    sSI shape_u_tex_0;            // optional
    sSI shape_u_tex_1;            // optional
+   sSI shape_u_a_min;            // optional
+   sSI shape_u_a_max;            // optional
+   sSI shape_u_a_maxmin_scale;   // optional
+   sSI shape_u_a_exp;            // optional
+   sSI shape_u_paint_tex;        // optional
+   sSI shape_u_paint_start;      // optional
+   sSI shape_u_paint_end;        // optional
+   sSI shape_u_paint_scale;      // optional
+   sSI shape_u_paint_ndir;       // optional
+   sSI shape_u_paint_ob_len;     // optional
+   sSI shape_u_paint_angle;      // optional
 
    // debug:
    sBool b_draw_inner;

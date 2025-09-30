@@ -88,6 +88,17 @@ ShaderVG_Shape::ShaderVG_Shape(void) {
    shape_u_debug           = -1;
    shape_u_tex_0           = -1;
    shape_u_tex_1           = -1;
+   shape_u_a_min           = -1;
+   shape_u_a_max           = -1;
+   shape_u_a_maxmin_scale  = -1;
+   shape_u_a_exp           = -1;
+   shape_u_paint_tex       = -1;
+   shape_u_paint_start     = -1;
+   shape_u_paint_end       = -1;
+   shape_u_paint_scale     = -1;
+   shape_u_paint_ndir      = -1;
+   shape_u_paint_ob_len    = -1;
+   shape_u_paint_angle     = -1;
 
    // debug:
    b_draw_inner  = YAC_TRUE;
@@ -555,6 +566,17 @@ sBool ShaderVG_Shape::createShapeShader(const char *_sVS, const char *_sFS) {
    shape_u_debug           = shape_shader.getUniformLocation("u_debug");            // optional
    shape_u_tex_0           = shape_shader.getUniformLocation("u_tex_0");            // optional
    shape_u_tex_1           = shape_shader.getUniformLocation("u_tex_1");            // optional
+   shape_u_a_min           = shape_shader.getUniformLocation("u_a_min");            // optional
+   shape_u_a_max           = shape_shader.getUniformLocation("u_a_max");            // optional
+   shape_u_a_maxmin_scale  = shape_shader.getUniformLocation("u_a_maxmin_scale");   // optional
+   shape_u_a_exp           = shape_shader.getUniformLocation("u_a_exp");            // optional
+   shape_u_paint_tex       = shape_shader.getUniformLocation("u_paint_tex");        // optional
+   shape_u_paint_start     = shape_shader.getUniformLocation("u_paint_start");      // optional
+   shape_u_paint_end       = shape_shader.getUniformLocation("u_paint_end");        // optional
+   shape_u_paint_scale     = shape_shader.getUniformLocation("u_paint_scale");      // optional
+   shape_u_paint_ndir      = shape_shader.getUniformLocation("u_paint_ndir");       // optional
+   shape_u_paint_ob_len    = shape_shader.getUniformLocation("u_paint_ob_len");     // optional
+   shape_u_paint_angle     = shape_shader.getUniformLocation("u_paint_angle");      // optional
 
    sBool r = validateShapeShader();
    if(!r)
