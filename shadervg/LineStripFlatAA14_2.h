@@ -165,8 +165,9 @@ class LineStripFlatAA14_2 : public ShaderVG_Shape {
       Dsdvg_attrib_offset(shape_a_vertex,   2/*size*/, GL_SHORT, GL_FALSE/*normalize*/, 4/*stride*/, _byteOffset +  0);
       Dsdvg_attrib_offset(shape_a_vertex_n, 2/*size*/, GL_SHORT, GL_FALSE/*normalize*/, 4/*stride*/, _byteOffset +  4);
 #else
-      Dsdvg_attrib_offset(shape_a_vertex,   2/*size*/, GL_SHORT, GL_FALSE/*normalize*/, 6/*stride*/, _byteOffset +  0);
-      Dsdvg_attrib_offset(shape_a_vertex_n, 2/*size*/, GL_SHORT, GL_FALSE/*normalize*/, 6/*stride*/, _byteOffset + 36);
+      Dsdvg_attrib_offset(shape_a_vertex,   2/*size*/, GL_SHORT,          GL_FALSE/*normalize*/, 6/*stride*/, _byteOffset +  0);
+      Dsdvg_attrib_offset(shape_a_vertex_n, 2/*size*/, GL_SHORT,          GL_FALSE/*normalize*/, 6/*stride*/, _byteOffset + 36);
+      Dsdvg_attrib_offset(shape_a_index,    1/*size*/, GL_UNSIGNED_SHORT, GL_FALSE/*normalize*/, 6/*stride*/, _byteOffset +  4);
 #endif // USE_VERTEX_ATTRIB_DIVISOR
 
       Dsdvg_attrib_enable(shape_a_vertex);
