@@ -50,8 +50,11 @@ class ShaderVG_Shape {
    sSI shape_a_vertex;
    sSI shape_a_vertex_n;   // optional
    sSI shape_a_vertex_nn;  // optional
+   sSI shape_a_pattern;    // optional
+   sSI shape_a_pattern_n;  // optional
    sSI shape_a_index;      // optional
    sSI shape_a_color;      // optional
+   sSI shape_a_color_n;    // optional
    sSI shape_a_edge;       // optional
    sSI shape_a_scale;      // optional
    sSI shape_a_bc;         // optional
@@ -84,6 +87,8 @@ class ShaderVG_Shape {
    sSI shape_u_decal_alpha;      // optional
    sSI shape_u_sampler;          // optional
    sSI shape_u_stroke_w;         // optional
+   sSI shape_u_line_pattern_scl; // optional
+   sSI shape_u_line_pattern_off; // optional
    sSI shape_u_debug;            // optional
    sSI shape_u_tex_0;            // optional
    sSI shape_u_tex_1;            // optional
@@ -157,6 +162,86 @@ class ShaderVG_Shape {
    void updatePaintUniforms (const shadervg_paint_t *_paint);
 
    virtual sBool onOpen (void);
+
+   sSI bindAndReturnVertexAttrib (void);
+
+   void drawEllipseFillAAPaint (Dsdvg_buffer_ref_t _scratchBuf,
+                                Dsdvg_mat4_ref_t _mvpMatrix,
+                                sF32 _centerX, sF32 _centerY,
+                                sF32 _radiusX, sF32 _radiusY,
+                                sF32 _fillR,   sF32 _fillG,   sF32 _fillB,   sF32 _fillA,
+                                sF32 _strokeR, sF32 _strokeG, sF32 _strokeB, sF32 _strokeA,
+                                sF32 _decalAlpha,
+                                sF32 _aaRange,
+                                sF32 _aaExp,
+                                const shadervg_paint_t *_paint
+                                );
+
+   void drawRoundRectFillAAPaint (Dsdvg_buffer_ref_t _scratchBuf,
+                                  Dsdvg_mat4_ref_t _mvpMatrix,
+                                  sF32 _centerX, sF32 _centerY,
+                                  sF32 _sizeX,   sF32 _sizeY,
+                                  sF32 _radiusX, sF32 _radiusY,
+                                  sF32 _fillR,   sF32 _fillG,   sF32 _fillB,   sF32 _fillA,
+                                  sF32 _strokeR, sF32 _strokeG, sF32 _strokeB, sF32 _strokeA,
+                                  sF32 _decalAlpha,
+                                  sF32 _aaRange,
+                                  sF32 _aaExp,
+                                  const shadervg_paint_t *_paint
+                                  );
+
+   void drawRectFillAAPaint (Dsdvg_buffer_ref_t _scratchBuf,
+                             Dsdvg_mat4_ref_t _mvpMatrix,
+                             sF32 _centerX, sF32 _centerY,
+                             sF32 _sizeX,   sF32 _sizeY,
+                             sF32 _fillR,   sF32 _fillG,   sF32 _fillB,   sF32 _fillA,
+                             sF32 _strokeR, sF32 _strokeG, sF32 _strokeB, sF32 _strokeA,
+                             sF32 _decalAlpha,
+                             sF32 _aaRange,
+                             sF32 _aaExp,
+                             const shadervg_paint_t *_paint
+                             );
+
+   void drawRectStrokeAAPaint (Dsdvg_buffer_ref_t _scratchBuf,
+                               Dsdvg_mat4_ref_t _mvpMatrix,
+                               sF32 _centerX, sF32 _centerY,
+                               sF32 _sizeX,   sF32 _sizeY,
+                               sF32 _fillR, sF32 _fillG, sF32 _fillB, sF32 _fillA,
+                               sF32 _strokeR, sF32 _strokeG, sF32 _strokeB, sF32 _strokeA,
+                               sF32 _strokeW,
+                               sF32 _decalAlpha,
+                               sF32 _aaRange,
+                               sF32 _aaExp,
+                               const shadervg_paint_t *_paint
+                               );
+
+   void drawEllipseStrokeAAPaint (Dsdvg_buffer_ref_t _scratchBuf,
+                                  Dsdvg_mat4_ref_t _mvpMatrix,
+                                  sF32 _centerX, sF32 _centerY,
+                                  sF32 _radiusX, sF32 _radiusY,
+                                  sF32 _fillR, sF32 _fillG, sF32 _fillB, sF32 _fillA,
+                                  sF32 _strokeR, sF32 _strokeG, sF32 _strokeB, sF32 _strokeA,
+                                  sF32 _strokeW,
+                                  sF32 _decalAlpha,
+                                  sF32 _aaRange,
+                                  sF32 _aaExp,
+                                  const shadervg_paint_t *_paint
+                                  );
+
+   void drawRoundRectStrokeAAPaint (Dsdvg_buffer_ref_t _scratchBuf,
+                                    Dsdvg_mat4_ref_t _mvpMatrix,
+                                    sF32 _centerX, sF32 _centerY,
+                                    sF32 _sizeX,   sF32 _sizeY,
+                                    sF32 _radiusX, sF32 _radiusY,
+                                    sF32 _fillR, sF32 _fillG, sF32 _fillB, sF32 _fillA,
+                                    sF32 _strokeR, sF32 _strokeG, sF32 _strokeB, sF32 _strokeA,
+                                    sF32 _strokeW,
+                                    sF32 _decalAlpha,
+                                    sF32 _aaRange,
+                                    sF32 _aaExp,
+                                    const shadervg_paint_t *_paint
+                                    );
+
 };
 
 

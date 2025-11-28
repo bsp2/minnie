@@ -29,8 +29,8 @@
 #include <stdarg.h>
 #include <math.h>
 
-#define Dprintf       if(0);else printf
-#define Derrorprintf  if(0);else printf
+#define Dprintf       if(!MINNIE_PRINTF);else printf
+#define Derrorprintf  if(!MINNIE_PRINTF);else printf
 
 #include "../inc_yac.h"
 #include "hal.h"
@@ -74,9 +74,9 @@ sBool hal_window_init(void) {
          SDL_GL_MakeCurrent(sdl_window, sdl_glcontext);
          SDL_GL_SetSwapInterval(1);
 
-#ifdef YAC_WIN32
+#ifndef YAC_MACOS
          load_gl_extensions();
-#endif // YAC_WIN32
+#endif // !YAC_MACOS
 
          ret = YAC_TRUE;
       }

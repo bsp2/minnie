@@ -31,7 +31,6 @@ class TrianglesFillFlat32PatternAlpha : public ShaderVG_Shape {
    const char *vs_src =
       "uniform mat4  u_transform; \n"
       "uniform vec2  u_paint_start; \n"
-      "uniform vec2  u_paint_scale; \n"
       "uniform vec2  u_paint_ob_size; \n"
       "uniform float u_paint_ob_len; \n"
       " \n"

@@ -1,6 +1,6 @@
 These are the `TKS` language bindings for the `Minnie` vector graphics API (distributed under terms of the [MIT license](../LICENSE)).
 
-[](tests/test_shadervg.tks) contains a set of ~90 test cases for Minnie's ShaderVG render backend ([screenshots](tests/screenshots/), [API docs](https://html-preview.github.io/?url=https://raw.githubusercontent.com/bsp2/tks/main/apidocs/ee/ShaderVG.html)).
+[](tests/test_shadervg.tks) contains a set of 170 test cases for Minnie's ShaderVG render backend ([screenshots](tests/screenshots/), [API docs](https://html-preview.github.io/?url=https://raw.githubusercontent.com/bsp2/tks/main/apidocs/ee/ShaderVG.html)).
 
 See [here](../native/README.md) for the native C / C++ version of the library and test cases.
 
@@ -203,13 +203,13 @@ See [here](../native/README.md) for the native C / C++ version of the library an
 - test_049_begin_textured_gouraud_triangle_fan
   
   ![screenshot](tests/screenshots/test_049_begin_textured_gouraud_triangle_fan.png)
-- test_050_begin_textured_gouraud_triangle_fan_alpha.png
+- test_050_begin_textured_gouraud_triangle_fan_alpha
   
   ![screenshot](tests/screenshots/test_050_begin_textured_gouraud_triangle_fan_alpha.png)
 - test_051_begin_textured_gouraud_triangle_strip
   
   ![screenshot](tests/screenshots/test_051_begin_textured_gouraud_triangle_strip.png)
-- test_052_begin_textured_gouraud_triangle_strip_alpha.png
+- test_052_begin_textured_gouraud_triangle_strip_alpha
   
   ![screenshot](tests/screenshots/test_052_begin_textured_gouraud_triangle_strip_alpha.png)
 - test_053_text_1
@@ -308,3 +308,261 @@ See [here](../native/README.md) for the native C / C++ version of the library an
 - test_084_begin_polygon_pattern_decal_alpha_aa
   
  ![screenshot](tests/screenshots/test_084_begin_polygon_pattern_decal_alpha_aa.png)
+- test_085_ellipse_fill_aa_linear
+  
+  ![screenshot](tests/screenshots/test_085_ellipse_fill_aa_linear.png)
+- test_086_ellipse_fill_stroke_aa_linear
+  
+  ![screenshot](tests/screenshots/test_086_ellipse_fill_stroke_aa_linear.png)
+- test_087_ellipse_fill_aa_radial
+  
+  ![screenshot](tests/screenshots/test_087_ellipse_fill_aa_radial.png)
+- test_088_ellipse_fill_stroke_aa_radial
+  
+  ![screenshot](tests/screenshots/test_088_ellipse_fill_stroke_aa_radial.png)
+- test_089_ellipse_fill_aa_conic
+  
+  ![screenshot](tests/screenshots/test_089_ellipse_fill_aa_conic.png)
+- test_090_ellipse_fill_stroke_aa_conic
+  
+  ![screenshot](tests/screenshots/test_090_ellipse_fill_stroke_aa_conic.png)
+- test_091_ellipse_fill_aa_pattern
+  
+  ![screenshot](tests/screenshots/test_091_ellipse_fill_aa_pattern.png)
+- test_092_ellipse_fill_stroke_aa_pattern
+  
+  ![screenshot](tests/screenshots/test_092_ellipse_fill_stroke_aa_pattern.png)
+- test_093_ellipse_fill_aa_pattern_alpha
+  
+  ![screenshot](tests/screenshots/test_093_ellipse_fill_aa_pattern_alpha.png)
+- test_094_ellipse_fill_stroke_aa_pattern_alpha
+  
+  ![screenshot](tests/screenshots/test_094_ellipse_fill_stroke_aa_pattern_alpha.png)
+- test_095_ellipse_fill_aa_pattern_decal
+  
+  ![screenshot](tests/screenshots/test_095_ellipse_fill_aa_pattern_decal.png)
+- test_096_ellipse_fill_stroke_aa_pattern_decal
+  
+  ![screenshot](tests/screenshots/test_096_ellipse_fill_stroke_aa_pattern_decal.png)
+- test_097_ellipse_fill_aa_pattern_decal_alpha
+  
+  ![screenshot](tests/screenshots/test_097_ellipse_fill_aa_pattern_decal_alpha.png)
+- test_098_ellipse_fill_stroke_aa_pattern_decal_alpha
+  
+  ![screenshot](tests/screenshots/test_098_ellipse_fill_stroke_aa_pattern_decal_alpha.png)
+- test_099_roundrect_fill_aa_linear
+  
+  ![screenshot](tests/screenshots/test_099_roundrect_fill_aa_linear.png)
+- test_100_roundrect_fill_stroke_aa_linear
+  
+  ![screenshot](tests/screenshots/test_100_roundrect_fill_stroke_aa_linear.png)
+- test_101_roundrect_fill_aa_radial
+  
+  ![screenshot](tests/screenshots/test_101_roundrect_fill_aa_radial.png)
+- test_102_roundrect_fill_stroke_aa_radial
+  
+  ![screenshot](tests/screenshots/test_102_roundrect_fill_stroke_aa_radial.png)
+- test_103_roundrect_fill_aa_conic
+  
+  ![screenshot](tests/screenshots/test_103_roundrect_fill_aa_conic.png)
+- test_104_roundrect_fill_stroke_aa_conic
+  
+  ![screenshot](tests/screenshots/test_104_roundrect_fill_stroke_aa_conic.png)
+- test_105_roundrect_fill_aa_pattern
+  
+  ![screenshot](tests/screenshots/test_105_roundrect_fill_aa_pattern.png)
+- test_106_roundrect_fill_stroke_aa_pattern
+  
+  ![screenshot](tests/screenshots/test_106_roundrect_fill_stroke_aa_pattern.png)
+- test_107_roundrect_fill_aa_pattern_alpha
+  
+  ![screenshot](tests/screenshots/test_107_roundrect_fill_aa_pattern_alpha.png)
+- test_108_roundrect_fill_stroke_aa_pattern_alpha
+  
+  ![screenshot](tests/screenshots/test_108_roundrect_fill_stroke_aa_pattern_alpha.png)
+- test_109_roundrect_fill_aa_pattern_decal
+  
+  ![screenshot](tests/screenshots/test_109_roundrect_fill_aa_pattern_decal.png)
+- test_110_roundrect_fill_stroke_aa_pattern_decal
+  
+  ![screenshot](tests/screenshots/test_110_roundrect_fill_stroke_aa_pattern_decal.png)
+- test_111_roundrect_fill_aa_pattern_decal_alpha
+  
+  ![screenshot](tests/screenshots/test_111_roundrect_fill_aa_pattern_decal_alpha.png)
+- test_112_roundrect_fill_stroke_aa_pattern_decal_alpha
+  
+  ![screenshot](tests/screenshots/test_112_roundrect_fill_stroke_aa_pattern_decal_alpha.png)
+- test_001_rect_fill_stroke_aa
+  
+  ![screenhots](tests/screenshots/test_001_rect_fill_stroke_aa.png)
+- test_113_rect_fill_aa_linear
+  
+  ![screenhots](tests/screenshots/test_113_rect_fill_aa_linear.png)
+- test_114_rect_fill_stroke_aa_linear
+  
+  ![screenhots](tests/screenshots/test_114_rect_fill_stroke_aa_linear.png)
+- test_115_rect_fill_aa_radial
+  
+  ![screenhots](tests/screenshots/test_115_rect_fill_aa_radial.png)
+- test_116_rect_fill_stroke_aa_radial
+  
+  ![screenhots](tests/screenshots/test_116_rect_fill_stroke_aa_radial.png)
+- test_117_rect_fill_aa_conic
+  
+  ![screenhots](tests/screenshots/test_117_rect_fill_aa_conic.png)
+- test_118_rect_fill_stroke_aa_conic
+  
+  ![screenhots](tests/screenshots/test_118_rect_fill_stroke_aa_conic.png)
+- test_119_rect_fill_aa_pattern
+  
+  ![screenhots](tests/screenshots/test_119_rect_fill_aa_pattern.png)
+- test_120_rect_fill_stroke_aa_pattern
+  
+  ![screenhots](tests/screenshots/test_120_rect_fill_stroke_aa_pattern.png)
+- test_121_rect_fill_aa_pattern_alpha
+  
+  ![screenhots](tests/screenshots/test_121_rect_fill_aa_pattern_alpha.png)
+- test_122_rect_fill_stroke_aa_pattern_alpha
+  
+  ![screenhots](tests/screenshots/test_122_rect_fill_stroke_aa_pattern_alpha.png)
+- test_123_rect_fill_aa_pattern_decal
+  
+  ![screenhots](tests/screenshots/test_123_rect_fill_aa_pattern_decal.png)
+- test_124_rect_fill_stroke_aa_pattern_decal
+  
+  ![screenhots](tests/screenshots/test_124_rect_fill_stroke_aa_pattern_decal.png)
+- test_125_rect_fill_aa_pattern_decal_alpha
+  
+  ![screenhots](tests/screenshots/test_125_rect_fill_aa_pattern_decal_alpha.png)
+- test_126_rect_fill_stroke_aa_pattern_decal_alpha
+  
+  ![screenhots](tests/screenshots/test_126_rect_fill_stroke_aa_pattern_decal_alpha.png)
+- test_127_rect_stroke_aa_linear
+  
+  ![screenhots](tests/screenshots/test_127_rect_stroke_aa_linear.png)
+- test_128_rect_stroke_aa_radial
+  
+  ![screenhots](tests/screenshots/test_128_rect_stroke_aa_radial.png)
+- test_129_rect_stroke_aa_conic
+  
+  ![screenhots](tests/screenshots/test_129_rect_stroke_aa_conic.png)
+- test_130_rect_stroke_aa_pattern
+  
+  ![screenhots](tests/screenshots/test_130_rect_stroke_aa_pattern.png)
+- test_131_rect_stroke_aa_pattern_alpha
+  
+  ![screenhots](tests/screenshots/test_131_rect_stroke_aa_pattern_alpha.png)
+- test_132_rect_stroke_aa_pattern_decal
+  
+  ![screenhots](tests/screenshots/test_132_rect_stroke_aa_pattern_decal.png)
+- test_133_rect_stroke_aa_pattern_decal_alpha
+  
+  ![screenhots](tests/screenshots/test_133_rect_stroke_aa_pattern_decal_alpha.png)
+- test_134_ellipse_stroke_aa_linear
+  
+  ![screenhots](tests/screenshots/test_134_ellipse_stroke_aa_linear.png)
+- test_135_ellipse_stroke_aa_radial
+  
+  ![screenhots](tests/screenshots/test_135_ellipse_stroke_aa_radial.png)
+- test_136_ellipse_stroke_aa_conic
+  
+  ![screenhots](tests/screenshots/test_136_ellipse_stroke_aa_conic.png)
+- test_137_ellipse_stroke_aa_pattern
+  
+  ![screenhots](tests/screenshots/test_137_ellipse_stroke_aa_pattern.png)
+- test_138_ellipse_stroke_aa_pattern_alpha
+  
+  ![screenhots](tests/screenshots/test_138_ellipse_stroke_aa_pattern_alpha.png)
+- test_139_ellipse_stroke_aa_pattern_decal
+  
+  ![screenhots](tests/screenshots/test_139_ellipse_stroke_aa_pattern_decal.png)
+- test_140_ellipse_stroke_aa_pattern_decal_alpha
+  
+  ![screenhots](tests/screenshots/test_140_ellipse_stroke_aa_pattern_decal_alpha.png)
+- test_141_roundrect_stroke_aa_linear
+  
+  ![screenhots](tests/screenshots/test_141_roundrect_stroke_aa_linear.png)
+- test_142_roundrect_stroke_aa_radial
+  
+  ![screenhots](tests/screenshots/test_142_roundrect_stroke_aa_radial.png)
+- test_143_roundrect_stroke_aa_conic
+  
+  ![screenhots](tests/screenshots/test_143_roundrect_stroke_aa_conic.png)
+- test_144_roundrect_stroke_aa_pattern
+  
+  ![screenhots](tests/screenshots/test_144_roundrect_stroke_aa_pattern.png)
+- test_145_roundrect_stroke_aa_pattern_alpha
+  
+  ![screenhots](tests/screenshots/test_145_roundrect_stroke_aa_pattern_alpha.png)
+- test_146_roundrect_stroke_aa_pattern_decal
+  
+  ![screenhots](tests/screenshots/test_146_roundrect_stroke_aa_pattern_decal.png)
+- test_147_roundrect_stroke_aa_pattern_decal_alpha
+  
+  ![screenhots](tests/screenshots/test_147_roundrect_stroke_aa_pattern_decal_alpha.png)
+- test_148_begin_line_strip_pattern
+  
+  ![screenhots](tests/screenshots/test_148_begin_line_strip_pattern.png)
+- test_149_begin_line_strip_pattern_aa
+  
+  ![screenhots](tests/screenshots/test_149_begin_line_strip_pattern_aa.png)
+- test_150_begin_line_strip_pattern_bevel
+  
+  ![screenhots](tests/screenshots/test_150_begin_line_strip_pattern_bevel.png)
+- test_151_begin_line_strip_pattern_bevel_aa
+  
+  ![screenhots](tests/screenshots/test_151_begin_line_strip_pattern_bevel_aa.png)
+- test_152_begin_line_strip_pattern_decal
+  
+  ![screenhots](tests/screenshots/test_152_begin_line_strip_pattern_decal.png)
+- test_153_begin_line_strip_pattern_decal_aa
+  
+  ![screenhots](tests/screenshots/test_153_begin_line_strip_pattern_decal_aa.png)
+- test_154_begin_line_strip_pattern_decal_bevel
+  
+  ![screenhots](tests/screenshots/test_154_begin_line_strip_pattern_decal_bevel.png)
+- test_155_begin_line_strip_pattern_decal_bevel_aa
+  
+  ![screenhots](tests/screenshots/test_155_begin_line_strip_pattern_decal_bevel_aa.png)
+- test_156_begin_line_strip_pattern_diagonal
+  
+  ![screenhots](tests/screenshots/test_156_begin_line_strip_pattern_diagonal.png)
+- test_157_begin_line_strip_pattern_diagonal_aa
+  
+  ![screenhots](tests/screenshots/test_157_begin_line_strip_pattern_diagonal_aa.png)
+- test_158_begin_line_strip_pattern_bevel_diagonal
+  
+  ![screenhots](tests/screenshots/test_158_begin_line_strip_pattern_bevel_diagonal.png)
+- test_159_begin_line_strip_pattern_bevel_diagonal_aa
+  
+  ![screenhots](tests/screenshots/test_159_begin_line_strip_pattern_bevel_diagonal_aa.png)
+- test_160_begin_line_strip_pattern_decal_diagonal
+  
+  ![screenhots](tests/screenshots/test_160_begin_line_strip_pattern_decal_diagonal.png)
+- test_161_begin_line_strip_pattern_decal_diagonal_aa
+  
+  ![screenhots](tests/screenshots/test_161_begin_line_strip_pattern_decal_diagonal_aa.png)
+- test_162_begin_line_strip_pattern_decal_bevel_diagonal
+  
+  ![screenhots](tests/screenshots/test_162_begin_line_strip_pattern_decal_bevel_diagonal.png)
+- test_163_begin_line_strip_pattern_decal_bevel_diagonal_aa
+  
+  ![screenhots](tests/screenshots/test_163_begin_line_strip_pattern_decal_bevel_diagonal_aa.png)
+- test_164_begin_lines_gouraud
+  
+  ![screenhots](tests/screenshots/test_164_begin_lines_gouraud.png)
+- test_165_begin_lines_gouraud_aa
+  
+  ![screenhots](tests/screenshots/test_165_begin_lines_gouraud_aa.png)
+- test_166_begin_points_square_gouraud
+  
+  ![screenhots](tests/screenshots/test_166_begin_points_square_gouraud.png)
+- test_167_begin_points_square_gouraud_aa
+  
+  ![screenhots](tests/screenshots/test_167_begin_points_square_gouraud_aa.png)
+- test_168_begin_points_round_gouraud
+  
+  ![screenhots](tests/screenshots/test_168_begin_points_round_gouraud.png)
+- test_169_begin_points_round_gouraud_aa
+  
+  ![screenhots](tests/screenshots/test_169_begin_points_round_gouraud_aa.png)
