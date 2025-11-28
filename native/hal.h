@@ -28,7 +28,7 @@
 #define VP_W  640
 #define VP_H  480
 
-#include "../../tksdl2/inc_sdl.h"
+#include "../tksdl2/inc_sdl.h"
 
 #ifdef YAC_WIN32
 extern void load_gl_extensions (void);

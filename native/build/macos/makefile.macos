@@ -7,7 +7,7 @@
 STATIC_TARGET=minnie.a
 APP_TARGET=minnie_test
 
-YAC_ROOTPATH=../../../../
+YAC_ROOTPATH=../../../
 include $(YAC_ROOTPATH)/install_macos.mk
 
 OPTFLAGS= -Os

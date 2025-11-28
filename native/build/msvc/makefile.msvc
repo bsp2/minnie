@@ -7,7 +7,7 @@
 STATIC_TARGET=minnie.lib
 APP_TARGET=minnie_test
 
-YAC_ROOTPATH=../../../../
+YAC_ROOTPATH=../../../
 include $(YAC_ROOTPATH)/install_msvc.mk
 
 SDL=$(YAC_ROOTPATH)/tksdl2/SDL2-2.32.4-win64
