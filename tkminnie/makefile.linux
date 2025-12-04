@@ -4,8 +4,8 @@
 # (c) 2014-2025 Bastian Spiegel <bs@tkscript.de>
 #
 
-YAC_ROOTPATH=../../
-include ../../install_linux.mk
+YAC_ROOTPATH=../
+include ../install_linux.mk
 
 PLUGIN=tkminnie
 
@@ -17,7 +17,7 @@ PLAF_OBJ=
 
 include make.objects
 
-include ../../plugin_linux.mk
+include ../plugin_linux.mk
 
 .PHONY: ee
 ee::

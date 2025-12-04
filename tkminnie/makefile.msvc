@@ -6,8 +6,8 @@
 
 PLUGIN=tkminnie
 
-YAC_ROOTPATH=../../
-include ../../install_msvc.mk
+YAC_ROOTPATH=../
+include ../install_msvc.mk
 
 include config_common.mk
 
@@ -17,7 +17,7 @@ PLAF_OBJ=
 
 include make.objects
 
-include ../../plugin_msvc.mk
+include ../plugin_msvc.mk
 
 .PHONY: ee
 ee::
