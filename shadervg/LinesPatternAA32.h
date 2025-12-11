@@ -1,5 +1,5 @@
 // ----
-// ---- file   : LinesGouraudAA32.h
+// ---- file   : LinesPatternAA32.h
 // ---- author : Bastian Spiegel <bs@tkscript.de>
 // ---- legal  : Distributed under terms of the MIT license (https://opensource.org/licenses/MIT)
 // ----          Copyright 2025 by bsp
@@ -24,25 +24,27 @@
 // ----
 // ----
 
-class LinesGouraudAA32 : public ShaderVG_Shape {
+class LinesPatternAA32 : public ShaderVG_Shape {
 
   public:
    // ------------ vertex shader --------------
    const char *vs_src =
       "uniform mat4  u_transform; \n"
       "uniform float u_stroke_w; \n"
+      "uniform float u_line_pattern_scl; \n"
+      "uniform float u_line_pattern_off; \n"
       " \n"
-      "ATTRIBUTE vec4 a_color; \n"
-      "ATTRIBUTE vec4 a_color_n; \n"
-      "ATTRIBUTE vec2 a_vertex; \n"
-      "ATTRIBUTE vec2 a_vertex_n; \n"
+      "ATTRIBUTE vec2  a_vertex; \n"
+      "ATTRIBUTE vec2  a_vertex_n; \n"
+      "ATTRIBUTE float a_pattern; \n"
+      "ATTRIBUTE float a_pattern_n; \n"
       " \n"
       "VARYING_OUT vec2 v_vertex_mp_1; \n"
       "VARYING_OUT vec2 v_vertex_mp_2; \n"
       "VARYING_OUT vec2 v_plane_n; \n"
       "VARYING_OUT vec2 v_plane_n_1; \n"
       "VARYING_OUT vec2 v_plane_n_2; \n"
-      "VARYING_OUT vec4 v_color; \n"
+      "VARYING_OUT vec2 v_uv; \n"
       " \n"
       "void main(void) { \n"
       "  vec2 v1 = a_vertex; \n"
@@ -56,32 +58,33 @@ class LinesGouraudAA32 : public ShaderVG_Shape {
       "  vec2 vN1 = normalize(v1R - v1L); \n"
       "  vec2 vN2 = normalize(v2R - v2L); \n"
       "  vec2 v; \n"
+      "  vec2 uv; \n"
       " \n"
       "  float index = float(gl_VertexID % 6); \n"
       " \n"
       "  if(index > 4.9) { \n"
       "    v = v1R; \n"
-      "    v_color = a_color; \n"
+      "    uv = vec2(a_pattern, 1.0); \n"
       "  } \n"
       "  else if(index > 3.9) { \n"
       "    v = v2R; \n"
-      "    v_color = a_color_n; \n"
+      "    uv = vec2(a_pattern_n, 1.0); \n"
       "  } \n"
       "  else if(index > 2.9) { \n"
       "    v = v1L; \n"
-      "    v_color = a_color; \n"
+      "    uv = vec2(a_pattern, 0.0); \n"
       "  } \n"
       "  else if(index > 1.9) { \n"
       "    v = v2R; \n"
-      "    v_color = a_color_n; \n"
+      "    uv = vec2(a_pattern_n, 1.0); \n"
       "  } \n"
       "  else if(index > 0.9) { \n"
       "    v = v2L; \n"
-      "    v_color = a_color_n; \n"
+      "    uv = vec2(a_pattern_n, 0.0); \n"
       "  } \n"
       "  else { \n"
       "    v = v1L; \n"
-      "    v_color = a_color; \n"
+      "    uv = vec2(a_pattern, 0.0); \n"
       "  } \n"
       " \n"
       "  gl_Position = u_transform * vec4(v,0,1); \n"
@@ -90,6 +93,9 @@ class LinesGouraudAA32 : public ShaderVG_Shape {
       "  v_plane_n   = vec2(vN.y, -vN.x); \n"
       "  v_plane_n_1 = vec2(vN1.y, -vN1.x); \n"
       "  v_plane_n_2 = vec2(-vN2.y, vN2.x); \n"
+      "  uv.x *= u_line_pattern_scl; \n"
+      "  uv.x += u_line_pattern_off; \n"
+      "  v_uv = uv; \n"
       "} \n"
       ;
 
@@ -99,13 +105,14 @@ class LinesGouraudAA32 : public ShaderVG_Shape {
       "uniform float u_stroke_w; \n"
       "uniform float u_aa_range; \n"
       "uniform float u_debug; \n"
+      "uniform sampler2D u_sampler; \n"
       " \n"
       "VARYING_IN vec2 v_vertex_mp_1; \n"
       "VARYING_IN vec2 v_vertex_mp_2; \n"
       "VARYING_IN vec2 v_plane_n; \n"
       "VARYING_IN vec2 v_plane_n_1; \n"
       "VARYING_IN vec2 v_plane_n_2; \n"
-      "VARYING_IN vec4 v_color; \n"
+      "VARYING_IN vec2 v_uv; \n"
       " \n"
       "void main(void) { \n"
       "  float d = abs(dot(v_vertex_mp_1, v_plane_n)); \n"
@@ -116,9 +123,10 @@ class LinesGouraudAA32 : public ShaderVG_Shape {
       "  float a2 = smoothstep(0.0, u_aa_range, d2); \n"
       "  a *= a1; \n"
       "  a *= a2; \n"
-      "  FRAGCOLOR = vec4(u_color_stroke.rgb*v_color.rgb, u_color_stroke.a * v_color.a * a); \n"
+      "  float patA = TEXTURE2D(u_sampler, v_uv).TEX_ALPHA; \n"
+      "  FRAGCOLOR = vec4(u_color_stroke.rgb, u_color_stroke.a * a * patA); \n"
       "  if(u_debug > 0.0) { \n"
-      "    FRAGCOLOR = vec4(u_color_stroke.r, a, u_color_stroke.b, u_color_stroke.a); \n"
+      "    FRAGCOLOR = vec4(a, fract(v_uv.x), fract(v_uv.y), 1); \n"
       "  } \n"
       "} \n"
       ;
@@ -127,12 +135,13 @@ class LinesGouraudAA32 : public ShaderVG_Shape {
       return
             (-1 != shape_a_vertex)
          && (-1 != shape_a_vertex_n)
-         && (-1 != shape_a_color)
-         && (-1 != shape_a_color_n)
          && (-1 != shape_u_transform)
          && (-1 != shape_u_color_stroke)
          && (-1 != shape_u_stroke_w)
          && (-1 != shape_u_aa_range)
+         && (-1 != shape_u_sampler)
+         && (-1 != shape_a_pattern)
+         && (-1 != shape_a_pattern_n)
          ;
    }
 
@@ -144,24 +153,25 @@ class LinesGouraudAA32 : public ShaderVG_Shape {
       return YAC_FALSE;
    }
 
-   void drawLinesGouraudAAVBO32(sUI              _vboId,
+   void drawLinesPatternAAVBO32(sUI              _vboId,
                                 sUI              _byteOffset,
                                 sUI              _numPoints,
                                 Dsdvg_mat4_ref_t _mvpMatrix,
                                 sF32             _strokeR, sF32 _strokeG, sF32 _strokeB, sF32 _strokeA,
                                 sF32             _strokeW,
-                                sF32             _aaRange
+                                sF32             _aaRange,
+                                sF32             _linePatternScale,
+                                sF32             _linePatternOffset
                                 ) {
       //
       // VBO vertex format (12 bytes per vertex):
-      //    +0 u8  r
-      //    +1 u8  g
-      //    +2 u8  b
-      //    +3 u8  a
-      //    +4 f32 x
-      //    +8 f32 y
+      //   +0 f32 x
+      //   +4 f32 y
+      //   +8 f32 patternOff
       //
-      // (note) requires USE_VERTEX_ATTRIB_DIVISOR
+      // (note) numVerts         = (numPoints-1) * 6
+      // (note) numSeg           = (numPoints / 2)
+      // (note) numTri           = (numPoints-1) * 2
       //
 
       sdvg_BindVBO(_vboId);
@@ -176,32 +186,35 @@ class LinesGouraudAA32 : public ShaderVG_Shape {
       {
          Dsdvg_uniform_1f(shape_u_debug, b_debug ? 1.0f : 0.0f);
       }
+      Dsdvg_uniform_1i(shape_u_sampler, 0);
+      Dsdvg_uniform_1f(shape_u_line_pattern_scl, _linePatternScale);
+      Dsdvg_uniform_1f(shape_u_line_pattern_off, _linePatternOffset);
 
-      Dsdvg_attrib_offset(shape_a_color,    4/*size*/, GL_UNSIGNED_BYTE, GL_TRUE /*normalize*/, 24/*stride*/, _byteOffset +  0);
-      Dsdvg_attrib_offset(shape_a_color_n,  4/*size*/, GL_UNSIGNED_BYTE, GL_TRUE /*normalize*/, 24/*stride*/, _byteOffset + 12);
-      Dsdvg_attrib_offset(shape_a_vertex,   2/*size*/, GL_FLOAT,         GL_FALSE/*normalize*/, 24/*stride*/, _byteOffset +  4);
-      Dsdvg_attrib_offset(shape_a_vertex_n, 2/*size*/, GL_FLOAT,         GL_FALSE/*normalize*/, 24/*stride*/, _byteOffset + 16);
+      Dsdvg_attrib_offset(shape_a_vertex,    2/*size*/, GL_FLOAT, GL_FALSE/*normalize*/, 24/*stride*/, _byteOffset +  0);
+      Dsdvg_attrib_offset(shape_a_vertex_n,  2/*size*/, GL_FLOAT, GL_FALSE/*normalize*/, 24/*stride*/, _byteOffset + 12);
+      Dsdvg_attrib_offset(shape_a_pattern,   1/*size*/, GL_FLOAT, GL_FALSE/*normalize*/, 24/*stride*/, _byteOffset +  8);
+      Dsdvg_attrib_offset(shape_a_pattern_n, 1/*size*/, GL_FLOAT, GL_FALSE/*normalize*/, 24/*stride*/, _byteOffset + 20);
 
-      Dsdvg_attrib_enable(shape_a_color);
-      Dsdvg_attrib_enable(shape_a_color_n);
       Dsdvg_attrib_enable(shape_a_vertex);
       Dsdvg_attrib_enable(shape_a_vertex_n);
-      Dsdvg_attrib_divisor(shape_a_color, 1);
-      Dsdvg_attrib_divisor(shape_a_color_n, 1);
+      Dsdvg_attrib_enable(shape_a_pattern);
+      Dsdvg_attrib_enable(shape_a_pattern_n);
       Dsdvg_attrib_divisor(shape_a_vertex, 1);
       Dsdvg_attrib_divisor(shape_a_vertex_n, 1);
+      Dsdvg_attrib_divisor(shape_a_pattern, 1);
+      Dsdvg_attrib_divisor(shape_a_pattern_n, 1);
 
       const sUI numInstances = (_numPoints / 2u);
       Dsdvg_draw_triangles_instanced_vbo(6, numInstances);
 
-      Dsdvg_attrib_disable(shape_a_color_n);
-      Dsdvg_attrib_disable(shape_a_color);
       Dsdvg_attrib_disable(shape_a_vertex_n);
       Dsdvg_attrib_disable(shape_a_vertex);
-      Dsdvg_attrib_divisor_reset(shape_a_color);
-      Dsdvg_attrib_divisor_reset(shape_a_color_n);
+      Dsdvg_attrib_disable(shape_a_pattern_n);
+      Dsdvg_attrib_disable(shape_a_pattern);
       Dsdvg_attrib_divisor_reset(shape_a_vertex);
       Dsdvg_attrib_divisor_reset(shape_a_vertex_n);
+      Dsdvg_attrib_divisor_reset(shape_a_pattern);
+      Dsdvg_attrib_divisor_reset(shape_a_pattern_n);
    }
 
 };

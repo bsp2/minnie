@@ -560,7 +560,9 @@ The total line stroke width is (2 * (strokeRadius+offset))
 YF void YAC_CALL sdvg_SetStrokeRadiusAAOffset (sF32 _offset);
 
 /* @function sdvg_SetLinePatternScale,float scale
-Set line pattern scale.
+Set line pattern scaling factor.
+
+This maps pixel distances to normalized (0..1) texture coordinates.
 
 @arg scale Pattern scaling factor (default = 1/256, suitable for pattern texture width = 256)
 
@@ -569,9 +571,11 @@ Set line pattern scale.
 YF void YAC_CALL sdvg_SetLinePatternScale (sF32 _scale);
 
 /* @function sdvg_SetLinePatternOffset,float offset
-Set line pattern start offset
+Set line pattern start offset.
 
-@arg offset Pattern offset (default = 0)
+The offset is applied after the line pattern scaling factor.
+
+@arg offset Normalized pattern offset (range 0..1) (default = 0)
 
 @group LinePattern
 */
@@ -2006,6 +2010,46 @@ Draw previously prepared vertex buffer as anti-aliased, gouraud-shaded line segm
 */
 YF void YAC_CALL sdvg_DrawLinesGouraudAAVBO32 (sUI _vboId, sUI _byteOffset, sUI _numPoints);
 
+/* @function sdvg_DrawLinesPatternVBO14_2,int vboId,int byteOffset,int numPoints
+Draw previously prepared vertex buffer as patterned line segments (14.2 fixed point format)
+
+@group Line
+@groupref Stroke
+@groupref LinePattern
+@groupref Texture
+*/
+YF void YAC_CALL sdvg_DrawLinesPatternVBO14_2(sUI _vboId, sUI _byteOffset, sUI _numPoints);
+
+/* @function sdvg_DrawLinesPatternAAVBO14_2,int vboId,int byteOffset,int numPoints
+Draw previously prepared vertex buffer as anti-aliased, patterned line segments (14.2 fixed point format)
+
+@group Line
+@groupref Stroke
+@groupref LinePattern
+@groupref Texture
+*/
+YF void YAC_CALL sdvg_DrawLinesPatternAAVBO14_2(sUI _vboId, sUI _byteOffset, sUI _numPoints);
+
+/* @function sdvg_DrawLinesPatternVBO32,int vboId,int byteOffset,int numPoints
+Draw previously prepared vertex buffer as patterned line segments (32 bit float format)
+
+@group Line
+@groupref Stroke
+@groupref LinePattern
+@groupref Texture
+*/
+YF void YAC_CALL sdvg_DrawLinesPatternVBO32(sUI _vboId, sUI _byteOffset, sUI _numPoints);
+
+/* @function sdvg_DrawLinesPatternAAVBO32,int vboId,int byteOffset,int numPoints
+Draw previously prepared vertex buffer as anti-aliased, patterned line segments (32 bit float format)
+
+@group Line
+@groupref Stroke
+@groupref LinePattern
+@groupref Texture
+*/
+YF void YAC_CALL sdvg_DrawLinesPatternAAVBO32(sUI _vboId, sUI _byteOffset, sUI _numPoints);
+
 /* @function sdvg_DrawPointsSquareVBO32,int vboId,int byteOffset,int numPoints
 Draw previously prepared vertex buffer as square points (32 bit float format)
 
@@ -2866,6 +2910,35 @@ Requires library to be built with USE_VERTEX_ATTRIB_DIVISOR.
 @group Gouraud
 */
 YF sBool YAC_CALL sdvg_BeginLinesGouraudAA (sUI _numPoints);
+
+/* @function sdvg_BeginLinesPattern,int numPoints:boolean
+Begin preparation or rendering of patterned line segments
+
+Requires library to be built with USE_VERTEX_ATTRIB_DIVISOR.
+
+@arg numPoints Number of points
+
+@group Begin
+@group Line
+@groupref Stroke
+@groupref LinePattern
+@groupref Texture
+*/
+YF sBool YAC_CALL sdvg_BeginLinesPattern (sUI _numPoints);
+
+/* @function sdvg_BeginLinesPatternAA,int numPoints:boolean
+Begin preparation or rendering of anti-aliased, patterned line segments
+
+Requires library to be built with USE_VERTEX_ATTRIB_DIVISOR.
+
+@arg numPoints Number of points
+
+@group Begin
+@group Line
+@groupref LinePattern
+@groupref Texture
+*/
+YF sBool YAC_CALL sdvg_BeginLinesPatternAA (sUI _numPoints);
 
 /* @function sdvg_BeginPointsSquare,int numPoints:boolean
 Begin preparation or rendering of square points

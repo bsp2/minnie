@@ -229,9 +229,11 @@ static sF32 ang_c = 0.0f;
 #define RENDER_BEGIN_POINTS_SQUARE_GOURAUD_AA                    167
 #define RENDER_BEGIN_POINTS_ROUND_GOURAUD                        168
 #define RENDER_BEGIN_POINTS_ROUND_GOURAUD_AA                     169
-#define NUM_RENDER_MODES                                         170  // UP/DOWN
+#define RENDER_BEGIN_LINES_PATTERN                               170
+#define RENDER_BEGIN_LINES_PATTERN_AA                            171
+#define NUM_RENDER_MODES                                         172
 
-static sSI render_mode = RENDER_RECT_FILL_AA;
+static sSI render_mode = RENDER_RECT_FILL_AA;  // UP/DOWN
 
 static const char *mode_names[NUM_RENDER_MODES] = {
    /*   0 */ "rect_fill_aa",
@@ -404,6 +406,8 @@ static const char *mode_names[NUM_RENDER_MODES] = {
    /* 167 */ "begin_points_square_gouraud_aa",
    /* 168 */ "begin_points_round_gouraud",
    /* 169 */ "begin_points_round_gouraud_aa",
+   /* 170 */ "begin_lines_pattern",
+   /* 171 */ "begin_lines_pattern_aa",
 };
 
 static YAC_Buffer buf_vbo;
@@ -2083,8 +2087,8 @@ static void TestBeginPolygon(sBool _bAA) {
 // ---------------------------------------------------------------------------- TestBeginLineStripPattern (148+149)
 void TestBeginLineStripPattern(sBool _bAA) {
    sdvg_BindTexture2D(tex_line_pattern_alpha_id, YAC_TRUE/*bRepeat*/, _bAA/*bFilter*/);
-   sdvg_SetLinePatternOffset(ang_w * (4.0f / sM_2PIf));
    sdvg_SetLinePatternScale(1.0f / 112.0f);
+   sdvg_SetLinePatternOffset(ang_w * (4.0f / sM_2PIf));
    sUI numSeg = 64u;
    sUI numPoints = numSeg + 1u;
    sF32 w = (sM_2PIf / numSeg);
@@ -2110,8 +2114,8 @@ void TestBeginLineStripPattern(sBool _bAA) {
 // ---------------------------------------------------------------------------- TestBeginLineStripPatternBevel (150+151)
 void TestBeginLineStripPatternBevel(sBool _bAA) {
    sdvg_BindTexture2D(tex_line_pattern_alpha_id, YAC_TRUE/*bRepeat*/, _bAA/*bFilter*/);
-   sdvg_SetLinePatternOffset(ang_w * (4.0f / sM_2PIf));
    sdvg_SetLinePatternScale(0.5f / 112.0f);
+   sdvg_SetLinePatternOffset(ang_w * (4.0f / sM_2PIf));
    sdvg_SetStrokeWidth(stroke_w * 4.0f);
    sUI numSeg = 64u;
    sUI numPoints = numSeg + 2u;
@@ -2138,8 +2142,8 @@ void TestBeginLineStripPatternBevel(sBool _bAA) {
 // ---------------------------------------------------------------------------- TestBeginLineStripPatternDecal(152+153)
 void TestBeginLineStripPatternDecal(sBool _bAA) {
    sdvg_BindTexture2D(tex_line_pattern_alpha_id, YAC_TRUE/*bRepeat*/, _bAA/*bFilter*/);
-   sdvg_SetLinePatternOffset(ang_w * (4.0f / sM_2PIf));
    sdvg_SetLinePatternScale(0.5f / 112.0f);
+   sdvg_SetLinePatternOffset(ang_w * (4.0f / sM_2PIf));
    sdvg_SetFillColor4f(0.4f, 0.4f, 0.4f, 0.5f*fill_alpha);
    sUI numSeg = 64u;
    sUI numPoints = numSeg + 1u;
@@ -2166,8 +2170,8 @@ void TestBeginLineStripPatternDecal(sBool _bAA) {
 // ---------------------------------------------------------------------------- TestBeginLineStripPatternDecalBevel (154+155)
 void TestBeginLineStripPatternDecalBevel(sBool _bAA) {
    sdvg_BindTexture2D(tex_line_pattern_alpha_id, YAC_TRUE/*bRepeat*/, _bAA/*bFilter*/);
-   sdvg_SetLinePatternOffset(ang_w * (4.0f / sM_2PIf));
    sdvg_SetLinePatternScale(0.5f / 112.0f);
+   sdvg_SetLinePatternOffset(ang_w * (4.0f / sM_2PIf));
    sdvg_SetStrokeWidth(stroke_w * 4.0f);
    sdvg_SetFillColor4f(0.9f, 0.6f, 0.2f, fill_alpha);
    sUI numSeg = 64u;
@@ -2195,8 +2199,8 @@ void TestBeginLineStripPatternDecalBevel(sBool _bAA) {
 // ---------------------------------------------------------------------------- TestBeginLineStripPatternDiagonal (156+157)
 void TestBeginLineStripPatternDiagonal(sBool _bAA) {
    sdvg_BindTexture2D(tex_diagonal_line_pattern_alpha_id, YAC_TRUE/*bRepeat*/, _bAA/*bFilter*/);
-   sdvg_SetLinePatternOffset(ang_w * (16.0f / sM_2PIf));
    sdvg_SetLinePatternScale(1.0f / (16.0f * diagonal_line_patterns[diagonal_line_pattern_idx*3+1]));
+   sdvg_SetLinePatternOffset(ang_w * (16.0f / sM_2PIf));
    sdvg_SetStrokeWidth(stroke_w * 2.0f);
    sdvg_SetFillColor4f(0.4f, 0.4f, 0.4f, 0.5f*fill_alpha);
    sUI numSeg = 64u;
@@ -2224,8 +2228,8 @@ void TestBeginLineStripPatternDiagonal(sBool _bAA) {
 // ---------------------------------------------------------------------------- TestBeginLineStripPatternBevelDiagonal (158+159)
 void TestBeginLineStripPatternBevelDiagonal(sBool _bAA) {
    sdvg_BindTexture2D(tex_diagonal_line_pattern_alpha_id, YAC_TRUE/*bRepeat*/, _bAA/*bFilter*/);
-   sdvg_SetLinePatternOffset(ang_w * (16.0f / sM_2PIf));
    sdvg_SetLinePatternScale(1.0f / (16.0f * diagonal_line_patterns[diagonal_line_pattern_idx*3+1]));
+   sdvg_SetLinePatternOffset(ang_w * (16.0f / sM_2PIf));
    sdvg_SetStrokeWidth(stroke_w * 4.0f);
    sdvg_SetFillColor4f(0.4f, 0.4f, 0.4f, 0.5f*fill_alpha);
    sUI numSeg = 64u;
@@ -2253,8 +2257,8 @@ void TestBeginLineStripPatternBevelDiagonal(sBool _bAA) {
 // ---------------------------------------------------------------------------- TestBeginLineStripPatternDecalDiagonal(160+161)
 void TestBeginLineStripPatternDecalDiagonal(sBool _bAA) {
    sdvg_BindTexture2D(tex_diagonal_line_pattern_alpha_id, YAC_TRUE/*bRepeat*/, _bAA/*bFilter*/);
-   sdvg_SetLinePatternOffset(ang_w * (16.0f / sM_2PIf));
    sdvg_SetLinePatternScale(1.0f / (16.0f * diagonal_line_patterns[diagonal_line_pattern_idx*3+1]));
+   sdvg_SetLinePatternOffset(ang_w * (16.0f / sM_2PIf));
    sdvg_SetStrokeWidth(stroke_w);
    sdvg_SetFillColor4f(0.4f, 0.4f, 0.4f, 0.5f*fill_alpha);
    sUI numSeg = 64u;
@@ -2282,8 +2286,8 @@ void TestBeginLineStripPatternDecalDiagonal(sBool _bAA) {
 // ---------------------------------------------------------------------------- TestBeginLineStripPatternDecalBevelDiagonal (162+163)
 void TestBeginLineStripPatternDecalBevelDiagonal(sBool _bAA) {
    sdvg_BindTexture2D(tex_diagonal_line_pattern_alpha_id, YAC_TRUE/*bRepeat*/, _bAA/*bFilter*/);
-   sdvg_SetLinePatternOffset(ang_w * (16.0f / sM_2PIf));
    sdvg_SetLinePatternScale(0.5f / (16.0f * diagonal_line_patterns[diagonal_line_pattern_idx*3+1]));
+   sdvg_SetLinePatternOffset(ang_w * (16.0f / sM_2PIf));
    sdvg_SetStrokeWidth(stroke_w * 4.0f);
    sdvg_SetFillColorARGB(sdvg_RGBAlpha(0xa6d475u, (sU8)(fill_alpha*255)));
    sUI numSeg = 192u;
@@ -2403,6 +2407,55 @@ void TestBeginPointsRoundGouraud(sBool _bAA) {
          aa += w * 3.0f;
       }
       sdvg_End();
+   }
+}
+
+// ---------------------------------------------------------------------------- TestBeginLinesPattern (170+171)
+void TestBeginLinesPattern(sBool _bAA) {
+   sdvg_BindTexture2D(tex_diagonal_line_pattern_alpha_id, YAC_TRUE/*bRepeat*/, _bAA/*bFilter*/);
+   sdvg_SetLinePatternScale(1.0f / (16.0f * diagonal_line_patterns[diagonal_line_pattern_idx*3+1]));
+   sdvg_SetLinePatternOffset(ang_w * (16.0f / sM_2PIf));
+   sdvg_SetStrokeWidth(stroke_w*1.5f);
+   sUI numSeg = 32u;
+   sF32 w = (sM_2PIf / numSeg);
+   sF32 a = ang_x * 0.25f;
+   sF32 x1, y1;
+   sF32 x2, y2;
+   if(1)
+   {
+      sUI maxPoints = 4096u;
+      sUI pointIdx = 0u;
+      if(_bAA
+         ? sdvg_BeginLinesPatternAA(maxPoints)
+         : sdvg_BeginLinesPattern(maxPoints)
+         )
+      {
+         for(sUI segIdx = 0u; segIdx < numSeg; segIdx++)
+         {
+            if(pointIdx == maxPoints)
+            {
+               sdvg_End();
+
+               if(_bAA)
+                  sdvg_BeginLinesPatternAA(maxPoints);
+               else
+                  sdvg_BeginLinesPattern(maxPoints);
+               pointIdx = 0u;
+            }
+
+            x1 = sinf(a) * 200.0f + (VP_W*0.5f);
+            y1 = cosf(a) * 200.0f + (VP_H*0.5f);
+            sdvg_Vertex2f(x1, y1);
+
+            x2 = sinf(a) * 40.0f + (VP_W*0.5f);
+            y2 = cosf(a) * 40.0f + (VP_H*0.5f);
+            sdvg_Vertex2f(x2, y2);
+
+            a += w;
+            pointIdx += 2u;
+         }
+         sdvg_End();
+      }
    }
 }
 
@@ -4091,6 +4144,14 @@ void hal_on_draw(void) {
 
       case RENDER_BEGIN_POINTS_ROUND_GOURAUD_AA: // 169
          TestBeginPointsRoundGouraud(YAC_TRUE/*bAA*/);
+         break;
+
+      case RENDER_BEGIN_LINES_PATTERN: // 170
+         TestBeginLinesPattern(YAC_FALSE/*bAA*/);
+         break;
+
+      case RENDER_BEGIN_LINES_PATTERN_AA: // 171
+         TestBeginLinesPattern(YAC_TRUE/*bAA*/);
          break;
    }
 
