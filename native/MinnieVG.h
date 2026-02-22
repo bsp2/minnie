@@ -1,5 +1,5 @@
 // ----
-// ---- file   : hal.h
+// ---- file   : MinnieVG.h
 // ---- author : Bastian Spiegel <bs@tkscript.de>
 // ---- legal  : Distributed under terms of the MIT license (https://opensource.org/licenses/MIT)
 // ----          Copyright 2025-2026 by bsp
@@ -19,7 +19,7 @@
 // ----          WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // ----          SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ----
-// ---- info   : "minnie" test hardware abstraction layer
+// ---- info   : "minnie" test case utilities
 // ---- note   :
 // ----
 // ----
@@ -31,51 +31,19 @@
 extern "C" {
 #endif // __cplusplus
 
-#ifndef VP_W
-#define VP_W  640
-#endif
+extern void  MinnieVG_Init (void);
+extern sBool MinnieVG_InitScratchBuffers (void);
+extern sBool MinnieVG_OnOpen (void);
+extern void  MinnieVG_Exit (void);
 
-#ifndef VP_H
-#define VP_H  480
-#endif
+extern void  MinnieVG_BeginFrame (void);
+extern void  MinnieVG_EndFrame (void);
 
-#define VKEY_BACKSPACE    8
-#define VKEY_TAB          9
-#define VKEY_RETURN      13
-#define VKEY_ESCAPE      27
-#define VKEY_SPACE       32
-#define VKEY_UP         273
-#define VKEY_DOWN       274
-#define VKEY_RIGHT      275
-#define VKEY_LEFT       276
-#define VKEY_INSERT     277
-#define VKEY_HOME       278
-#define VKEY_END        279
-#define VKEY_PAGEUP     280
-#define VKEY_PAGEDOWN   281
-
-#define VMOD_LSHIFT       1
-#define VMOD_RSHIFT       2
-#define VMOD_LCTRL       64
-#define VMOD_RCTRL      128
-#define VMOD_LALT       256
-#define VMOD_RALT       512
-
-
-#ifndef YAC_MACOS
-extern void load_gl_extensions (void);
-#endif // !YAC_MACOS
-
-extern sBool hal_window_init       (sUI _w, sUI _h);         // initialize
-extern void  hal_window_exit       (void);                   // shutdown
-extern void  hal_window_swap       (void);                   // swap front/back buffers
-extern void  hal_window_loop       (void);                   // enter event loop
-extern void  hal_window_quit       (void);                   // exit event loop
-extern void  hal_window_set_title  (const char *_s);         // update window title caption
-extern sU32  hal_get_ticks         (void);                   // query milliseconds
-extern void  hal_set_swap_interval (sU32 _interval);         // 0=vsync off, 1=vsync on
-extern void  hal_on_draw           (void);                   // implemented by app
-extern void  hal_on_key_down       (sU32 _code, sU32 _mod);  // implemented by app
+extern sBool MinnieVG_SetupDrawableFromBuffer (MinnieDrawable *_drawable, YAC_Buffer *_mib);
+extern void  MinnieVG_DebugPrintMinnieAndDrawableStats (MinnieDrawable *_drawable);
+extern void  MinnieVG_CalcModelTransform (MinnieDrawable *_d, Matrix4f *_mat);
+extern void  MinnieVG_SetTransformForDrawable (MinnieDrawable *_d);
+extern sBool MinnieVG_HandleDebugKey (sU32 _code, sU32 _mod);
 
 #ifdef __cplusplus
 } // extern "C"
