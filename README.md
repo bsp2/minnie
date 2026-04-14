@@ -42,7 +42,7 @@ $ ./test_shadervg
  RIGHT : Increase line width
 ESCAPE : Quit
 ~~~
-Please refer to the benchmark source codes for a full list of (debug) keyboard shortcuts.
+Please refer to the test source codes for a full list of (debug) keyboard shortcuts.
 
 ### Benchmark mode
 Each test case executable supports the following command line options:
