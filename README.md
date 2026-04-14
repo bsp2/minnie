@@ -21,7 +21,7 @@ $ git clone https://github.com/bsp2/minnie.git
 ~~~
 $ cd minnie
 $ . ./setenv_linux.sh
-$ cd minnie/native/build/linux/`
+$ cd native/build/linux/`
 $ m clean ; m bin
 ~~~
 
