@@ -36,10 +36,10 @@ $ ./test_shadervg
 
 ### Interactive keys
 ~~~
-UP : Next test
-DOWN : Previous test
-LEFT : Decrease line width
-RIGHT : Increase line width
+    UP : Next test
+  DOWN : Previous test
+  LEFT : Decrease line width
+ RIGHT : Increase line width
 ESCAPE : Quit
 ~~~
 Please refer to the benchmark source codes for a full list of (debug) keyboard shortcuts.
