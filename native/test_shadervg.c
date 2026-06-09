@@ -38,11 +38,18 @@
 #include <stdarg.h>
 #include <math.h>
 
+#if 1
 #define DISPLAY_WIDTH   640
 #define DISPLAY_HEIGHT  480
-
+#define VP_W  DISPLAY_WIDTH
+#define VP_H  DISPLAY_HEIGHT
+#else
+#define DISPLAY_WIDTH   320
+#define DISPLAY_HEIGHT  240
 #define VP_W  640
 #define VP_H  480
+#endif
+
 
 #include "../inc_minnie.h"
 #include "hal.h"
