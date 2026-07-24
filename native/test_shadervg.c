@@ -86,8 +86,8 @@ static sUI auto_exit_frames =
    ;
 static sUI auto_exit_num_iter = 1u;
 
-static uint32_t display_width;
-static uint32_t display_height;
+static sUI display_width;
+static sUI display_height;
 
 static sU32 last_ticks = 0u;  // 1000 ticks per second
 static sU32 num_frames_rendered = 0u;
@@ -341,10 +341,6 @@ static sF32 ang_c = 0.0f;
 #define NUM_RENDER_MODES                                         237
 
 static sSI render_mode = RENDER_RECT_FILL_AA;  // UP/DOWN
-// static sSI render_mode = RENDER_BEGIN_POLYGON_NONZERO_RADIAL;  // UP/DOWN
-// static sSI render_mode = RENDER_BEGIN_LINE_STRIP_MITER_AA_CONIC_CLOSED;
-// static sSI render_mode = RENDER_POLYGON_VBO;
-// sSI render_mode = RENDER_BEGIN_POLYGON_GRADIENT_LINEAR_AA;
 
 static sSI benchmark_start_render_mode = 0;
 
