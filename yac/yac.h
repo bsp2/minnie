@@ -20,7 +20,8 @@
 /// ----          06-Jan-2023 / 16-Jan-2023 / 26-Jan-2023 / 05-Feb-2023 / 12-Apr-2023 / 14-Apr-2023
 /// ----          17-Jul-2023 / 24-Jul-2023 / 26-Jul-2023 / 13-Jan-2024 / 07-Jun-2024 / 17-Aug-2024
 /// ----          20-Aug-2024 / 22-Aug-2024 / 10-Oct-2024 / 20-Oct-2024 / 14-Mar-2025 / 01-Oct-2025
-/// ----          03-Oct-2025 / 22-Feb-2026 / 09-Apr-2026 / 18-May-2026
+/// ----          03-Oct-2025 / 22-Feb-2026 / 09-Apr-2026 / 18-May-2026 / 08-Aug-2026 / 20-Aug-2026
+/// ----          21-Aug-2026 / 25-Aug-2026
 /// ----
 /// ---- info   : YAC - Yet Another Component object model.  YAC is a self contained, binary level
 /// ----          C++ component/reflectance model and plugin SDK.
@@ -408,12 +409,18 @@ typedef enum __yac_host_interfaces {
 // ----
 // ---- determine thread local storage attribute syntax
 // ----
-#ifdef YAC_VC
+#ifndef YAC_TLS
+#if defined(_MSC_VER)
 #define YAC_TLS __declspec(thread)
-#endif
-#ifdef YAC_GCC
+#elif defined(__clang__)
+#define YAC_TLS _Thread_local
+#elif defined(__GNUC__)
 #define YAC_TLS __thread
-#endif
+#else
+//#error unsupported TLS platform
+#define YAC_TLS
+#endif // TLS platform
+#endif // YAC_TLS
 
 // Note: using TLS in .dlls is only allowed since Windows Vista.
 //       However, I noticed that static TLS arrays increase the .dll file size
@@ -960,7 +967,7 @@ enum __yac_class_IDs {
    YAC_CLID_BUFFER,          // 31: an Array of bytes, derived from YAC_StreamBase
    YAC_CLID_FILE,            // 32: used to access local filesystems, derived from YAC_StreamBase
    YAC_CLID_PAKFILE,         // 33: used to access virtual file systems, derived from YAC_StreamBase
-   YAC_CLID_removed__1,      // 34: <removed>
+   YAC_CLID_NIBBLESTREAM,    // 34: wrapper class for any Stream, can read and write 4bit "nibbles"
 
    // Note: Be careful with the preallocated String/array variants.
    //       A buffer reallocation will waste the initial buffer memory (not leaked but it cannot be used for anything
@@ -1449,9 +1456,9 @@ public:
   virtual void             YAC_VCALL yacStreamWriteF64               (sF64);                                                 // write a standard IEEE 64bit double
   virtual sU64             YAC_VCALL yacStreamReadI64                (void);                                                 // read 64bit signed long long
   virtual void             YAC_VCALL yacStreamWriteI64               (sS64);                                                 // write 64bit signed long long
-  virtual void             YAC_VCALL vtable_entry_2_35_reserved      (void);
-  virtual void             YAC_VCALL vtable_entry_2_36_reserved      (void);
-  virtual void             YAC_VCALL vtable_entry_2_37_reserved      (void);
+  virtual sBool            YAC_VCALL yacStreamIsReadable             (void);
+  virtual sBool            YAC_VCALL yacStreamIsWritable             (void);
+  virtual void             YAC_VCALL yacStreamFlush                  (void);
   virtual void             YAC_VCALL vtable_entry_2_38_reserved      (void);
   virtual void             YAC_VCALL vtable_entry_2_39_reserved      (void);
   virtual void             YAC_VCALL vtable_entry_2_40_reserved      (void);
@@ -2055,7 +2062,7 @@ public:
     virtual YAC_Object  *YAC_VCALL yacNew                     (const char *_namespaceName, const char *_classname) = 0; // allocate unknown API object (e.g. Texture or a plugin class)
     virtual YAC_Object  *YAC_VCALL yacNewByID                 (sUI _class_ID) = 0;
     virtual void         YAC_VCALL yacDelete                  (YAC_Object *_apiobject) = 0; // delete previously allocated API object
-    virtual sUI          YAC_VCALL yacGetClassIDByName        (sChar *_name) = 0;
+    virtual sUI          YAC_VCALL yacGetClassIDByName        (const char *_name) = 0;
     virtual sUI          YAC_VCALL yacRegisterFunction        (void *_adr, const char *_name, sUI _returntype, const char *_return_otype, sUI _numargs, const sUI *_argtypes, const char **_argtypenames, sUI _callstyle) = 0;
     virtual sSI          YAC_VCALL yacEvalMethodByName        (YAC_Object *_apiobject, const char *_name, YAC_Value *_args, sUI _numargs, YAC_Value *_r) = 0;  // lookup method by name, typecast arguments and evaluate. return true if everything worked OK, false if method _name was not found.
     virtual YAC_Object * YAC_VCALL yacGetClassTemplateByID    (sUI _class_ID) = 0;
@@ -2112,13 +2119,13 @@ public:
 	// ----
 	// ----
     virtual sUI                YAC_VCALL yacRunning                 (void) = 0;
-    virtual YAC_FunctionHandle YAC_VCALL yacFindFunction            (sChar *_name) = 0;
+    virtual YAC_FunctionHandle YAC_VCALL yacFindFunction            (const char *_name) = 0;
     virtual sUI                YAC_VCALL yacEvalFunction            (YAC_ContextHandle _context, YAC_FunctionHandle _script_function, sUI _numargs, YAC_Value *_args) = 0; // evaluate script function, e.g. used for tks signal callbacks; see YAC_Object::yacRegisterSignal(),yacGetSignalStringList(). return true or false depending on whether the function call succeeded.
-    virtual YAC_ModuleHandle   YAC_VCALL yacCompileModule           (sChar *_source) = 0;
+    virtual YAC_ModuleHandle   YAC_VCALL yacCompileModule           (const char *_source) = 0;
     virtual void               YAC_VCALL yacDeleteModule            (YAC_ModuleHandle _mod) = 0;
-    virtual YAC_FunctionHandle YAC_VCALL yacFindFunctionInModule    (YAC_ModuleHandle _mod, sChar *_name) = 0;
-    virtual YAC_VariableHandle YAC_VCALL yacFindVariableInModule    (YAC_ModuleHandle _mod, sChar *_name) = 0;
-    virtual YAC_FunctionHandle YAC_VCALL yacFindVariableInFunction  (YAC_FunctionHandle _fn, sChar *_name) = 0;
+    virtual YAC_FunctionHandle YAC_VCALL yacFindFunctionInModule    (YAC_ModuleHandle _mod, const char *_name) = 0;
+    virtual YAC_VariableHandle YAC_VCALL yacFindVariableInModule    (YAC_ModuleHandle _mod, const char *_name) = 0;
+    virtual YAC_VariableHandle YAC_VCALL yacFindVariableInFunction  (YAC_FunctionHandle _fn, const char *_name) = 0;
     virtual void               YAC_VCALL yacSetVariable             (YAC_VariableHandle _var, YAC_Value *_v) = 0;
     virtual void               YAC_VCALL yacGetVariable             (YAC_VariableHandle _var, YAC_Value *_r) = 0;
     virtual sUI                YAC_VCALL yacEvalFunctionReturn      (YAC_ContextHandle _context, YAC_FunctionHandle _script_function, sUI _numargs, YAC_Value *_args, YAC_Value *_r) = 0; // evaluate script function, e.g. used for tks signal callbacks; see YAC_Object::yacRegisterSignal(),yacGetSignalStringList(). return true or false depending on whether the function call succeeded.
@@ -2126,7 +2133,7 @@ public:
     virtual void               YAC_VCALL yacContextDestroy          (YAC_ContextHandle _context) = 0; // Destroy script execution context
     virtual YAC_ContextHandle  YAC_VCALL yacContextGetDefault       (void) = 0;
     virtual void               YAC_VCALL yacContextSetDefault       (YAC_ContextHandle _context) = 0; // Set default script context (for use in threads created by plugins / not by a Thread object)
-    virtual void               YAC_VCALL vtable_entry_3_15_reserved (void) = 0;
+    virtual void               YAC_VCALL yacAssignVariable          (YAC_VariableHandle _var, YAC_Value *_v) = 0;
     virtual void               YAC_VCALL vtable_entry_3_16_reserved (void) = 0;
     virtual void               YAC_VCALL vtable_entry_3_17_reserved (void) = 0;
     virtual void               YAC_VCALL vtable_entry_3_18_reserved (void) = 0;
