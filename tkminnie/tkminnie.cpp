@@ -64,7 +64,7 @@ YAC_Host *yac_host;
 Dyac_std_exid_impl;
 
 
-#include "../../tkopengl/tkopengl_shared.cpp"
+#include "../tkopengl/tkopengl_shared.cpp"
 
 
 // ---------------------------------------------------------------------------

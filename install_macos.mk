@@ -122,7 +122,7 @@ INSTALL   = ginstall
 MAKE      = make
 RM        = rm -f
 SED       = sed
-TKS       = tks
+TKS       = $(TKS_PREFIX)/tks
 ZIP       = zip
 7Z        = 7zz
 UPX       = upx
@@ -246,6 +246,7 @@ EXTRA_INCLUDES=
 #EXTRA_LIBS=
 EXTRA_LIBS=
 # -L$(CROSS_ROOT)/usr/lib
+EXTRA_LIBS+= -L"${TKS_LIB_PREFIX}"
 
 
 #
@@ -256,10 +257,18 @@ OPTFLAGS=
 ifeq ($(RELEASE),y)
 
 ifeq ($(OPT_SIZE),y)
-OPTFLAGS += -Os
+#OPTFLAGS += -Os
+OPTFLAGS+= -Oz
+LDFLAGS+= -Wl,-no_compact_unwind
 else
 OPTFLAGS += -O3
 endif
+
+ifeq ($(OPT_LTO),y)
+OPTFLAGS+= -flto
+LDFLAGS += -flto
+endif
+
 #OPTFLAGS += -O2
 #OPTFLAGS += -O2 -fsanitize=undefined
 #OPTFLAGS +=

@@ -127,7 +127,7 @@ INSTALL   = ginstall
 MAKE      = make
 RM        = rm -f
 SED       = sed
-TKS       = tks
+TKS       = $(TKS_PREFIX)/tks
 ZIP       = zip
 UPX       = upx
 MD5SUM    = md5sum
@@ -248,6 +248,7 @@ EXTRA_INCLUDES=
 EXTRA_LIBS=
 #EXTRA_LIBS= -L/home/bsp/omap35x/zlib-1.2.3
 #EXTRA_LIBS= -L$(CROSS_ROOT)/usr/lib
+EXTRA_LIBS+= -L"${TKS_LIB_PREFIX}"
 
 
 #
@@ -268,9 +269,21 @@ LDFLAGS += $(MFLAGS) --sysroot=$(CROSS_ROOT)
 OPTFLAGS += -O3
 else
 ifeq ($(OPT_SIZE),y)
-OPTFLAGS += -Os
+OPTFLAGS+= -fno-exceptions -fno-unwind-tables
+ifeq ("${BUILD_CLANG}","y")
+OPTFLAGS+= -Oz
+OPTFLAGS+= -ffunction-sections -fdata-sections
+LDFLAGS+= -Wl,--gc-sections
+else
+OPTFLAGS+= -Os
+LDFLAGS+= -dead_strip
+endif
 else
 OPTFLAGS += -O3
+endif
+ifeq ($(OPT_LTO),y)
+OPTFLAGS+= -flto
+LDFLAGS += -flto
 endif
 # for Raspberry Pi or Poky Linux builds
 ifeq ($(BUILD_ARM),y)
