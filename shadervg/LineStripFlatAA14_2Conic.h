@@ -36,9 +36,12 @@ class LineStripFlatAA14_2Conic : public ShaderVG_Shape {
       " \n"
       "ATTRIBUTE vec2  a_vertex; \n"
       "ATTRIBUTE vec2  a_vertex_n; \n"
+#ifndef SHADERVG_GL_VERTEX_ID
+      "ATTRIBUTE float a_vertex_id; \n"
+#endif // SHADERVG_GL_VERTEX_ID
       " \n"
       "VARYING_OUT vec2 v_vertex_mp; \n"
-      "flat VARYING_OUT vec2 v_plane_n; \n"
+      "VARYING_FLAT VARYING_OUT vec2 v_plane_n; \n"
       "VARYING_OUT vec2 v_paint_pos; \n"
       " \n"
       "void main(void) { \n"
@@ -52,7 +55,11 @@ class LineStripFlatAA14_2Conic : public ShaderVG_Shape {
       "  vec2 v2R = vec2(v2.x - vD.y, v2.y + vD.x); \n"
       "  vec2 v; \n"
       " \n"
+#ifndef SHADERVG_GL_VERTEX_ID
+      "  float index = a_vertex_id; \n"
+#else
       "  float index = float(gl_VertexID); \n"
+#endif // SHADERVG_GL_VERTEX_ID
       " \n"
       "  if(index > 4.9) { \n"
       "    v = v1R; \n"
@@ -92,7 +99,7 @@ class LineStripFlatAA14_2Conic : public ShaderVG_Shape {
       "uniform float     u_paint_angle01; \n"
       " \n"
       "VARYING_IN vec2 v_vertex_mp; \n"
-      "flat VARYING_IN vec2 v_plane_n; \n"
+      "VARYING_FLAT VARYING_IN vec2 v_plane_n; \n"
       "VARYING_IN vec2 v_paint_pos; \n"
       " \n"
       "void main(void) { \n"
@@ -115,10 +122,10 @@ class LineStripFlatAA14_2Conic : public ShaderVG_Shape {
       "  if(ap >= 1.0) ap -= 1.0; \n"   // (note) use texture repeat ?
       "  else if(ap < 0.0) ap += 1.0; \n"
       "  vec4 cp = TEXTURE2D(u_paint_tex, vec2(ap, 0.0)); \n"
-      "  FRAGCOLOR = vec4(u_color_stroke.rgb * cp.rgb, u_color_stroke.a * cp.a * a); \n"
+      "  OUT_FRAGCOLOR = vec4(u_color_stroke.rgb * cp.rgb, u_color_stroke.a * cp.a * a); \n"
 #ifdef SHADERVG_DEBUG_FRAG
       "  if(u_debug > 0.0) { \n"
-      "    FRAGCOLOR = vec4(u_color_stroke.r, a, u_color_stroke.b, u_color_stroke.a); \n"
+      "    OUT_FRAGCOLOR = vec4(u_color_stroke.r, a, u_color_stroke.b, u_color_stroke.a); \n"
       "  } \n"
 #endif // SHADERVG_DEBUG_FRAG
       "} \n"

@@ -38,12 +38,15 @@ class LinesPatternAA32 : public ShaderVG_Shape {
       "ATTRIBUTE vec2  a_vertex_n; \n"
       "ATTRIBUTE float a_pattern; \n"
       "ATTRIBUTE float a_pattern_n; \n"
+#ifndef SHADERVG_GL_VERTEX_ID
+      "ATTRIBUTE float a_vertex_id; \n"
+#endif // SHADERVG_GL_VERTEX_ID
       " \n"
       "VARYING_OUT vec2 v_vertex_mp_1; \n"
       "VARYING_OUT vec2 v_vertex_mp_2; \n"
-      "flat VARYING_OUT vec2 v_plane_n; \n"
-      "flat VARYING_OUT vec2 v_plane_n_1; \n"
-      "flat VARYING_OUT vec2 v_plane_n_2; \n"
+      "VARYING_FLAT VARYING_OUT vec2 v_plane_n; \n"
+      "VARYING_FLAT VARYING_OUT vec2 v_plane_n_1; \n"
+      "VARYING_FLAT VARYING_OUT vec2 v_plane_n_2; \n"
       "VARYING_OUT vec2 v_uv; \n"
       " \n"
       "void main(void) { \n"
@@ -60,8 +63,19 @@ class LinesPatternAA32 : public ShaderVG_Shape {
       "  vec2 v; \n"
       "  vec2 uv; \n"
       " \n"
-      "  float index = float(gl_VertexID % 6); \n"
+#ifndef SHADERVG_GL_VERTEX_ID
+      "  float index = a_vertex_id; \n"
+#else
+      "  float index = float(gl_VertexID); \n"
+#endif // SHADERVG_GL_VERTEX_ID
       " \n"
+#ifndef SHADERVG_GL_VERTEX_ID
+      "  if(index > 5.9) { \n"
+      "    v = vec2(0,0); \n"
+      "    uv = vec2(0,0); \n"
+      "  } \n"
+      "  else \n"
+#endif // SHADERVG_GL_VERTEX_ID
       "  if(index > 4.9) { \n"
       "    v = v1R; \n"
       "    uv = vec2(a_pattern, 1.0); \n"
@@ -111,9 +125,9 @@ class LinesPatternAA32 : public ShaderVG_Shape {
       " \n"
       "VARYING_IN vec2 v_vertex_mp_1; \n"
       "VARYING_IN vec2 v_vertex_mp_2; \n"
-      "flat VARYING_IN vec2 v_plane_n; \n"
-      "flat VARYING_IN vec2 v_plane_n_1; \n"
-      "flat VARYING_IN vec2 v_plane_n_2; \n"
+      "VARYING_FLAT VARYING_IN vec2 v_plane_n; \n"
+      "VARYING_FLAT VARYING_IN vec2 v_plane_n_1; \n"
+      "VARYING_FLAT VARYING_IN vec2 v_plane_n_2; \n"
       "VARYING_IN vec2 v_uv; \n"
       " \n"
       "void main(void) { \n"
@@ -126,10 +140,10 @@ class LinesPatternAA32 : public ShaderVG_Shape {
       "  float a2 = smoothstep(0.0, u_aa_range, d2); \n"
       "  a *= a2; \n"
       "  float patA = TEXTURE2D(u_sampler, v_uv).TEX_ALPHA; \n"
-      "  FRAGCOLOR = vec4(u_color_stroke.rgb, u_color_stroke.a * a * patA); \n"
+      "  OUT_FRAGCOLOR = vec4(u_color_stroke.rgb, u_color_stroke.a * a * patA); \n"
 #ifdef SHADERVG_DEBUG_FRAG
       "  if(u_debug > 0.0) { \n"
-      "    FRAGCOLOR = vec4(a, fract(v_uv.x), fract(v_uv.y), 1); \n"
+      "    OUT_FRAGCOLOR = vec4(a, fract(v_uv.x), fract(v_uv.y), 1); \n"
       "  } \n"
 #endif // SHADERVG_DEBUG_FRAG
       "} \n"
@@ -197,6 +211,7 @@ class LinesPatternAA32 : public ShaderVG_Shape {
       Dsdvg_uniform_1f(shape_u_line_pattern_scl, _linePatternScale);
       Dsdvg_uniform_1f(shape_u_line_pattern_off, _linePatternOffset);
 
+#ifdef SHADERVG_GL_VERTEX_ID
       Dsdvg_attrib_offset(shape_a_vertex,    2/*size*/, GL_FLOAT, GL_FALSE/*normalize*/, 24/*stride*/, _byteOffset +  0);
       Dsdvg_attrib_offset(shape_a_vertex_n,  2/*size*/, GL_FLOAT, GL_FALSE/*normalize*/, 24/*stride*/, _byteOffset + 12);
       Dsdvg_attrib_offset(shape_a_pattern,   1/*size*/, GL_FLOAT, GL_FALSE/*normalize*/, 24/*stride*/, _byteOffset +  8);
@@ -222,6 +237,28 @@ class LinesPatternAA32 : public ShaderVG_Shape {
       Dsdvg_attrib_divisor_reset(shape_a_vertex_n);
       Dsdvg_attrib_divisor_reset(shape_a_pattern);
       Dsdvg_attrib_divisor_reset(shape_a_pattern_n);
+#else
+      Dsdvg_attrib_offset(shape_a_vertex_id, 1/*size*/, GL_UNSIGNED_SHORT, GL_FALSE/*normalize*/, 14/*stride*/, _byteOffset +  0);
+      Dsdvg_attrib_offset(shape_a_vertex,    2/*size*/, GL_FLOAT,          GL_FALSE/*normalize*/, 14/*stride*/, _byteOffset +  2);
+      Dsdvg_attrib_offset(shape_a_vertex_n,  2/*size*/, GL_FLOAT,          GL_FALSE/*normalize*/, 14/*stride*/, _byteOffset + 86);
+      Dsdvg_attrib_offset(shape_a_pattern,   1/*size*/, GL_FLOAT,          GL_FALSE/*normalize*/, 14/*stride*/, _byteOffset + 10);
+      Dsdvg_attrib_offset(shape_a_pattern_n, 1/*size*/, GL_FLOAT,          GL_FALSE/*normalize*/, 14/*stride*/, _byteOffset + 94);
+
+      Dsdvg_attrib_enable(shape_a_vertex_id);
+      Dsdvg_attrib_enable(shape_a_vertex);
+      Dsdvg_attrib_enable(shape_a_vertex_n);
+      Dsdvg_attrib_enable(shape_a_pattern);
+      Dsdvg_attrib_enable(shape_a_pattern_n);
+
+      const sUI numInstances = (_numPoints / 2u);
+      Dsdvg_draw_triangles_vbo(0u, 12u * numInstances - 6u);
+
+      Dsdvg_attrib_disable(shape_a_vertex_n);
+      Dsdvg_attrib_disable(shape_a_vertex);
+      Dsdvg_attrib_disable(shape_a_pattern_n);
+      Dsdvg_attrib_disable(shape_a_pattern);
+      Dsdvg_attrib_disable(shape_a_vertex_id);
+#endif // SHADERVG_GL_VERTEX_ID
    }
 
 };

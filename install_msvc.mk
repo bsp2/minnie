@@ -87,9 +87,9 @@ TKS_TARGET_SITE_PREFIX=$(TKS_SITE_PREFIX)
 # 
 # Number of parallel targets to make
 # 
-NUMJOBS=$(NUMBER_OF_PROCESSORS)
-#NUMJOBS=4
-
+ifeq ($(NUM_JOBS),)
+NUM_JOBS=$(NUMBER_OF_PROCESSORS)
+endif
 
 #
 # Set to 'y' to use shared "msvcrtXX.dll"
@@ -409,6 +409,11 @@ ifeq ($(RELEASE),y)
 #OPTFLAGS= -Ox -Ot
 OPTFLAGS= -O2 -Oy
 #OPTFLAGS += -arch:AVX2
+ifeq ($(OPT_LTO),y)
+CFLAGS+= -GL
+CPPFLAGS+= -GL
+LDFLAGS+= -LTCG
+endif
 else ifeq ($(DEBUG),y)
 OPTFLAGS_DEBUG= -Od -D_DEBUG
 OPTFLAGS=$(OPTFLAGS_DEBUG)

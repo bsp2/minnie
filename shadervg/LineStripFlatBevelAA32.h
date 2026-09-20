@@ -38,8 +38,8 @@ class LineStripFlatBevelAA32 : public ShaderVG_Shape {
       "ATTRIBUTE vec2  a_vertex_nn; \n"
       " \n"
       "VARYING_OUT vec2 v_vertex_mp; \n"
-      "flat VARYING_OUT vec2 v_plane_n; \n"
-      "flat VARYING_OUT float v_join; \n"
+      "VARYING_FLAT VARYING_OUT vec2 v_plane_n; \n"
+      "VARYING_FLAT VARYING_OUT float v_join; \n"
       " \n"
       "void main(void) { \n"
       "  vec2 v1 = a_vertex; \n"
@@ -191,8 +191,8 @@ class LineStripFlatBevelAA32 : public ShaderVG_Shape {
 #endif // SHADERVG_DEBUG_FRAG
       " \n"
       "VARYING_IN vec2 v_vertex_mp; \n"
-      "flat VARYING_IN vec2 v_plane_n; \n"
-      "flat VARYING_IN float v_join; \n"
+      "VARYING_FLAT VARYING_IN vec2 v_plane_n; \n"
+      "VARYING_FLAT VARYING_IN float v_join; \n"
       " \n"
       "void main(void) { \n"
       "  float a; \n"
@@ -203,13 +203,13 @@ class LineStripFlatBevelAA32 : public ShaderVG_Shape {
       "  else { \n"
       "    a = 1.0 - smoothstep(u_stroke_w - u_aa_range, u_stroke_w, d); \n"
       "  } \n"
-      "  FRAGCOLOR = vec4(u_color_stroke.rgb, u_color_stroke.a * a); \n"
+      "  OUT_FRAGCOLOR = vec4(u_color_stroke.rgb, u_color_stroke.a * a); \n"
 #ifdef SHADERVG_DEBUG_FRAG
       "  if(u_debug > 0.0) { \n"
-      "    FRAGCOLOR = vec4(u_color_stroke.r, a, u_color_stroke.b, u_color_stroke.a); \n"
+      "    OUT_FRAGCOLOR = vec4(u_color_stroke.r, a, u_color_stroke.b, u_color_stroke.a); \n"
       "  } \n"
 #endif // SHADERVG_DEBUG_FRAG
-      /* "  FRAGCOLOR = vec4(1,0,0,1);\n" */
+      /* "  OUT_FRAGCOLOR = vec4(1,0,0,1);\n" */
       "} \n"
       ;
 

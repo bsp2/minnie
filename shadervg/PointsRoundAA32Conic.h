@@ -38,6 +38,9 @@ class PointsRoundAA32Conic : public ShaderVG_Shape {
       "uniform vec2  u_paint_ob_size; \n"
       " \n"
       "ATTRIBUTE vec2 a_vertex; \n"
+#ifndef SHADERVG_GL_VERTEX_ID
+      "ATTRIBUTE float a_vertex_id; \n"
+#endif // SHADERVG_GL_VERTEX_ID
       " \n"
       "VARYING_OUT vec2 v_vertex_mp; \n"
       "VARYING_OUT vec2 v_paint_pos; \n"
@@ -49,7 +52,11 @@ class PointsRoundAA32Conic : public ShaderVG_Shape {
 #ifdef SHADERVG_UNIFORM_ARRAY
       "  v = vCtr + u_a_offset[int(gl_VertexID)]; \n"
 #else
+#ifndef SHADERVG_GL_VERTEX_ID
+      "  float index = a_vertex_id; \n"
+#else
       "  float index = float(gl_VertexID); \n"
+#endif // SHADERVG_GL_VERTEX_ID
       " \n"
       "  if(index > 4.9) { \n"
       "    v = vec2(vCtr.x - u_point_radius, vCtr.y + u_point_radius); \n"  // LB
@@ -113,10 +120,10 @@ class PointsRoundAA32Conic : public ShaderVG_Shape {
       "  if(ap >= 1.0) ap -= 1.0; \n"   // (note) use texture repeat ?
       "  else if(ap < 0.0) ap += 1.0; \n"
       "  vec4 cp = TEXTURE2D(u_paint_tex, vec2(ap, 0.0)); \n"
-      "  FRAGCOLOR = vec4(u_color_stroke.rgb * cp.rgb, u_color_stroke.a * cp.a * a); \n"
+      "  OUT_FRAGCOLOR = vec4(u_color_stroke.rgb * cp.rgb, u_color_stroke.a * cp.a * a); \n"
 #ifdef SHADERVG_DEBUG_FRAG
       "  if(u_debug > 0.0) { \n"
-      "    FRAGCOLOR = vec4(1.0, a, a, 1.0); \n"
+      "    OUT_FRAGCOLOR = vec4(1.0, a, a, 1.0); \n"
       "  } \n"
 #endif // SHADERVG_DEBUG_FRAG
       "} \n"

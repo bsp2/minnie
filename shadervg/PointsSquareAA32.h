@@ -36,6 +36,9 @@ class PointsSquareAA32 : public ShaderVG_Shape {
 #endif // SHADERVG_UNIFORM_ARRAY
       " \n"
       "ATTRIBUTE vec2  a_vertex; \n"
+#ifndef SHADERVG_GL_VERTEX_ID
+      "ATTRIBUTE float a_vertex_id; \n"
+#endif // SHADERVG_GL_VERTEX_ID
       " \n"
       "VARYING_OUT vec2 v_vertex_mp; \n"
       " \n"
@@ -46,7 +49,11 @@ class PointsSquareAA32 : public ShaderVG_Shape {
 #ifdef SHADERVG_UNIFORM_ARRAY
       "  v = vCtr + u_a_offset[int(gl_VertexID)]; \n"
 #else
+#ifndef SHADERVG_GL_VERTEX_ID
+      "  float index = a_vertex_id; \n"
+#else
       "  float index = float(gl_VertexID); \n"
+#endif // SHADERVG_GL_VERTEX_ID
       " \n"
       "  if(index > 4.9) { \n"
       "    v = vec2(vCtr.x - u_point_radius, vCtr.y + u_point_radius); \n"  // LB
@@ -90,10 +97,10 @@ class PointsSquareAA32 : public ShaderVG_Shape {
       "  float d = length(max(vd, 0.0)) + min(max(vd.x, vd.y), 0.0); \n"
       // aa
       "  float a = 1.0 - smoothstep(0.0, u_aa_range, d); \n"
-      "  FRAGCOLOR = vec4(u_color_stroke.rgb, u_color_stroke.a * a); \n"
+      "  OUT_FRAGCOLOR = vec4(u_color_stroke.rgb, u_color_stroke.a * a); \n"
 #ifdef SHADERVG_DEBUG_FRAG
       "  if(u_debug > 0.0) { \n"
-      "    FRAGCOLOR = vec4(1.0, a, a, 1.0); \n"
+      "    OUT_FRAGCOLOR = vec4(1.0, a, a, 1.0); \n"
       "  } \n"
 #endif // SHADERVG_DEBUG_FRAG
       "} \n"
@@ -153,6 +160,7 @@ class PointsSquareAA32 : public ShaderVG_Shape {
       }
 #endif // SHADERVG_DEBUG_FRAG
 
+#ifdef SHADERVG_GL_VERTEX_ID
       Dsdvg_attrib_offset(shape_a_vertex, 2/*size*/, GL_FLOAT, GL_FALSE/*normalize*/,  8/*stride*/, _byteOffset + 0);
 
       Dsdvg_attrib_enable(shape_a_vertex);
@@ -163,6 +171,19 @@ class PointsSquareAA32 : public ShaderVG_Shape {
 
       Dsdvg_attrib_disable(shape_a_vertex);
       Dsdvg_attrib_divisor_reset(shape_a_vertex);
+#else
+      Dsdvg_attrib_offset(shape_a_vertex_id, 1/*size*/, GL_UNSIGNED_SHORT, GL_FALSE/*normalize*/, 10/*stride*/, _byteOffset + 0);
+      Dsdvg_attrib_offset(shape_a_vertex,    2/*size*/, GL_FLOAT,          GL_FALSE/*normalize*/, 10/*stride*/, _byteOffset + 2);
+
+      Dsdvg_attrib_enable(shape_a_vertex_id);
+      Dsdvg_attrib_enable(shape_a_vertex);
+
+      const sUI numInstances = _numPoints;
+      Dsdvg_draw_triangles_vbo(0u, 6u * numInstances);
+
+      Dsdvg_attrib_disable(shape_a_vertex);
+      Dsdvg_attrib_disable(shape_a_vertex_id);
+#endif // SHADERVG_GL_VERTEX_ID
    }
 
 };
