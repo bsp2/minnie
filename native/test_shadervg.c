@@ -25,8 +25,8 @@
 // ----
 // ----          e.g.:
 // ----          $ m clean; m bin && ./test_shadervg 177 10 50000
-// ----          [...] auto_exit after 10 frames (50000 iteration(s)) / 5853 millisec => 85426.27 fps
-// ----          => (1000*85426.27)=> 85.42627 million lines per second
+// ----          [...] auto_exit after 10 frames (500000 iteration(s)) / 3680 millisec => 135869.56 fps
+// ----          => (1000*135869.56)=> 135.87 million lines per second
 // ----
 // ----
 // ----
@@ -659,7 +659,7 @@ static sSI diagonal_line_pattern_idx = 0;  // 's' / lctrl-s
 #define BENCHMARK_NUM_FRAMES_BASELINE          10
 #define BENCHMARK_NUM_ITERATIONS_PER_FRAME    100
 #else
-#define BENCHMARK_NUM_FRAMES_BASELINE        2000
+#define BENCHMARK_NUM_FRAMES_BASELINE           1
 #define BENCHMARK_NUM_ITERATIONS_PER_FRAME   2000
 #endif // DNX_POKY
 static sSI benchmark_frames_left = BENCHMARK_NUM_FRAMES_BASELINE;
@@ -5777,6 +5777,16 @@ void hal_on_draw(void) {
       }
    } // loop numIter
 
+   if(0)
+   {
+      sUI t = hal_get_ticks();
+      for(;;)
+      {
+         if((hal_get_ticks() - t) >= 300)
+            break;
+      }
+   }
+
    sF32 spd = b_anim ? b_slomo ? 0.1f : 1.0f : 0.0f;
    if(b_benchmark)
       spd = 0.0f;
@@ -5876,6 +5886,7 @@ void hal_on_draw(void) {
          SelectRenderMode(sWRAP(render_mode + 1, 0, NUM_RENDER_MODES));
       }
    }
+   
 }
 
 // ---------------------------------------------------------------------------- CalcLinePatternTex
